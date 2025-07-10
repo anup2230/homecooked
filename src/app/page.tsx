@@ -59,9 +59,11 @@ export default function HomePage() {
                 <div className="space-y-4 text-center md:text-left">
                     <h2 className="text-3xl font-bold font-headline">Find Meals Near You</h2>
                     <p className="text-muted-foreground text-lg">Discover talented home cooks in your neighborhood. See who's cooking nearby and enjoy fresh, locally-made food.</p>
-                    <Button>
+                    <Button asChild>
+                      <Link href="/map">
                         <MapPin className="mr-2 h-4 w-4" />
                         Explore Local Map
+                      </Link>
                     </Button>
                 </div>
                 <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg border">
