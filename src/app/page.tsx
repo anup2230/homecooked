@@ -48,10 +48,10 @@ export default function Home() {
       <section className="py-12 md:py-20 bg-secondary/50">
         <div className="container text-center">
           <h1 className="text-4xl md:text-5xl font-bold font-headline text-primary tracking-tight">
-            Your Neighborhood Flavor
+            Your Neighborhood Flavor, Delivered
           </h1>
           <p className="mt-4 max-w-2xl mx-auto text-lg text-foreground/80">
-            Discover authentic, homemade meals from talented local cooks in your community.
+            Homecooked is a marketplace connecting you with talented local cooks. Discover authentic meals prepared in independent home kitchens near you.
           </p>
           <div className="mt-8 max-w-2xl mx-auto flex flex-col sm:flex-row gap-2">
             <div className="relative flex-grow">

@@ -9,7 +9,7 @@ export default function AboutPage() {
             About Homecooked
           </h1>
           <p className="mt-4 max-w-3xl mx-auto text-lg text-foreground/80">
-            Bringing the heart of home cooking to your table.
+            Connecting communities through the love of authentic food.
           </p>
         </div>
       </section>
@@ -26,15 +26,15 @@ export default function AboutPage() {
             />
           </div>
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold font-headline">Our Story</h2>
+            <h2 className="text-3xl font-bold font-headline">Our Mission</h2>
             <p className="text-muted-foreground text-lg">
-              Homecooked was born from a simple idea: food tastes better when it's made with love. We saw a world full of passionate home cooks and neighbors craving authentic, soulful meals. Our mission is to connect them.
+              Homecooked was born from a simple idea: there's a world full of passionate home cooks and neighbors craving authentic, soulful meals. Our mission is to be the bridge that connects them.
             </p>
             <p className="text-muted-foreground text-lg">
-              We believe that every dish has a story, and the best ones are shared. By empowering local chefs to share their culinary talents, we're building a community that celebrates diversity, tradition, and the simple joy of a delicious, home-cooked meal.
+              We provide a platform for independent home chefs to turn their kitchens into a business and share their culinary talents. We believe that every dish has a story, and the best ones are shared. By empowering local cooks, we're building a community that celebrates diversity, tradition, and the simple joy of a delicious meal made with love.
             </p>
             <p className="text-muted-foreground text-lg">
-              Whether you're a cook looking to share your passion or a neighbor looking for a taste of home, you've found your place at the table.
+              Whether you're an independent cook looking to share your passion or a neighbor looking for a taste of home, Homecooked is your place at the table.
             </p>
           </div>
         </div>

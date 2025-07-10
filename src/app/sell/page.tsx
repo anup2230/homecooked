@@ -12,18 +12,18 @@ export default function SellPage() {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold font-headline text-primary tracking-tight">
-              Turn Your Kitchen into a Business
+              Share Your Passion for Cooking
             </h1>
             <p className="mt-4 max-w-xl text-lg text-foreground/80">
-              Join our community of talented home cooks and share your passion for food with your neighbors. Sign up today to start selling your delicious creations.
+              Join the Homecooked marketplace and turn your kitchen into an independent business. We provide the platform for you to connect with customers in your community.
             </p>
           </div>
 
           <Card className="w-full max-w-md">
             <CardHeader>
-              <CardTitle className="text-2xl">Become a Cook</CardTitle>
+              <CardTitle className="text-2xl">Become an Independent Cook</CardTitle>
               <CardDescription>
-                Fill out the form below to get started.
+                Fill out the form below to apply to sell on the Homecooked marketplace.
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
@@ -36,7 +36,7 @@ export default function SellPage() {
                 <Input id="email" type="email" placeholder="m@example.com" required />
               </div>
                <div className="grid gap-2">
-                <Label htmlFor="kitchen-name">Kitchen Name</Label>
+                <Label htmlFor="kitchen-name">Your Kitchen's Name</Label>
                 <Input id="kitchen-name" type="text" placeholder="Nonna's Kitchen" required />
               </div>
               <div className="grid gap-2">
@@ -51,7 +51,7 @@ export default function SellPage() {
             <CardFooter className="flex flex-col">
               <Button className="w-full">Apply to be a Cook</Button>
                <p className="mt-4 text-center text-sm text-muted-foreground">
-                Already a cook?{' '}
+                Already have an account?{' '}
                 <Link href="/login" className="underline">
                   Log in
                 </Link>

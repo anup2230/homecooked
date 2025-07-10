@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
   title: 'Homecooked',
-  description: 'Discover and order delicious homemade meals from local cooks.',
+  description: 'A marketplace to discover and order delicious homemade meals from independent local cooks.',
 };
 
 export default function RootLayout({
