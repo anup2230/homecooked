@@ -1,69 +1,53 @@
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { DishCard } from "@/components/dish-card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 import { mockDishes } from "@/lib/data";
+import { ArrowRight } from "lucide-react";
 
-const categories = [
-    'Italian',
-    'Mexican',
-    'Japanese',
-    'Indian',
-    'Chinese',
-    'American',
-    'Salad',
-    'Dessert',
-];
+export default function HomePage() {
+  const featuredDishes = mockDishes.slice(0, 4);
 
-export default function DiscoverPage() {
-    
   return (
-    <div className="container py-10">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold font-headline text-primary tracking-tight">
-          Discover Your Next Favorite Meal
-        </h1>
-        <p className="mt-4 max-w-3xl mx-auto text-lg text-foreground/80">
-          Explore a world of flavors from talented independent cooks in your community.
-        </p>
-      </div>
+    <div>
+      <section className="relative bg-secondary/50 py-20 md:py-32">
+        <div className="container text-center">
+           <h1 className="text-4xl md:text-6xl font-bold font-headline text-primary tracking-tight">
+            Authentic Homemade Meals,
+            <br />
+            Delivered to Your Door.
+          </h1>
+          <p className="mt-6 max-w-3xl mx-auto text-lg md:text-xl text-foreground/80">
+            Explore a world of flavors from talented independent cooks and third-party kitchens in your community.
+          </p>
+          <div className="mt-8 flex justify-center gap-4">
+            <Button asChild size="lg">
+              <Link href="/discover">Discover Dishes</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+               <Link href="/sell">Become a Cook</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
 
-      <div className="space-y-12">
-        {categories.map((category) => {
-            const dishesForCategory = mockDishes.filter(dish => dish.category === category);
-            if (dishesForCategory.length === 0) return null;
-
-            return (
-                <section key={category}>
-                    <h2 className="text-3xl font-bold font-headline mb-6">{category} Dishes</h2>
-                    <Carousel
-                        opts={{
-                            align: "start",
-                            loop: false,
-                        }}
-                        className="w-full"
-                    >
-                        <CarouselContent className="-ml-4">
-                            {dishesForCategory.map((dish) => (
-                                <CarouselItem key={dish.id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                                    <div className="h-full">
-                                        <DishCard dish={dish} />
-                                    </div>
-                                </CarouselItem>
-                            ))}
-        
-                        </CarouselContent>
-                        <CarouselPrevious className="hidden md:flex" />
-                        <CarouselNext className="hidden md:flex" />
-                    </Carousel>
-                </section>
-            );
-        })}
-      </div>
+      <section className="py-16 md:py-24">
+        <div className="container">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold font-headline">Featured Dishes</h2>
+            <Button variant="ghost" asChild>
+                <Link href="/discover">
+                    View All
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredDishes.map((dish) => (
+              <DishCard key={dish.id} dish={dish} />
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
