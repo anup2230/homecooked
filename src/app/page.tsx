@@ -1,11 +1,14 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { DishCard } from "@/components/dish-card";
-import { mockDishes } from "@/lib/data";
-import { ArrowRight } from "lucide-react";
+import { mockDishes, mockTestimonials } from "@/lib/data";
+import { ArrowRight, Star } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function HomePage() {
   const featuredDishes = mockDishes.slice(0, 4);
+  const trendingDishes = mockDishes.slice(4, 8); // Using different dishes for "trending"
 
   return (
     <div>
@@ -44,6 +47,58 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredDishes.map((dish) => (
               <DishCard key={dish.id} dish={dish} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-secondary/20 py-16 md:py-24">
+        <div className="container">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold font-headline">Trending Local Dishes</h2>
+             <Button variant="ghost" asChild>
+                <Link href="/discover">
+                    Explore More
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {trendingDishes.map((dish) => (
+              <DishCard key={dish.id} dish={dish} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 md:py-24">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold font-headline">What Our Customers Are Saying</h2>
+            <p className="mt-2 text-lg text-muted-foreground">Real stories from real food lovers.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {mockTestimonials.map((testimonial) => (
+              <Card key={testimonial.id}>
+                <CardContent className="p-6">
+                  <div className="flex items-center mb-4">
+                    <Avatar className="h-12 w-12 mr-4">
+                      <AvatarImage src={testimonial.avatarUrl} alt={testimonial.name} />
+                      <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold">{testimonial.name}</p>
+                      <p className="text-sm text-muted-foreground">{testimonial.location}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-0.5 mb-4">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                          <Star key={i} className="w-5 h-5 text-primary fill-primary" />
+                      ))}
+                  </div>
+                  <p className="text-muted-foreground italic">&quot;{testimonial.comment}&quot;</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>

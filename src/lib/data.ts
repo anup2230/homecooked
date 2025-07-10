@@ -1,4 +1,4 @@
-import type { User, Dish, Review, Order } from '@/lib/types';
+import type { User, Dish, Review, Order, Testimonial } from '@/lib/types';
 
 export const mockUsers: User[] = [
   { id: 'user-1', name: 'Maria Garcia', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true },
@@ -179,3 +179,27 @@ export const mockOrders: Order[] = [
     orderDate: '2024-05-22'
   }
 ]
+
+export const mockTestimonials: Testimonial[] = [
+  {
+    id: 'testimonial-1',
+    name: 'Jessica P.',
+    location: 'Brooklyn, NY',
+    avatarUrl: 'https://placehold.co/100x100.png',
+    comment: 'Homecooked is a game-changer! I ordered Nonna Isabella\'s meatballs and it was like a hug in a bowl. So easy to order and support local cooks.'
+  },
+  {
+    id: 'testimonial-2',
+    name: 'Tom L.',
+    location: 'Queens, NY',
+    avatarUrl: 'https://placehold.co/100x100.png',
+    comment: 'I love the variety. The Mapo Tofu was incredible and had that authentic kick I\'ve been looking for. Way better than takeout.'
+  },
+  {
+    id: 'testimonial-3',
+    name: 'Maria G.',
+    location: 'Manhattan, NY',
+    avatarUrl: 'https://placehold.co/100x100.png',
+    comment: 'As a busy professional, I barely have time to cook. Homecooked lets me enjoy a real, comforting meal without the hassle. The Pot Pie was amazing!'
+  },
+];

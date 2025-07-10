@@ -39,3 +39,11 @@ export type Order = {
   status: 'Pending Confirmation' | 'Preparing' | 'Ready for Pickup' | 'Completed' | 'Cancelled';
   orderDate: string;
 };
+
+export type Testimonial = {
+  id: string;
+  name: string;
+  location: string;
+  avatarUrl: string;
+  comment: string;
+};
