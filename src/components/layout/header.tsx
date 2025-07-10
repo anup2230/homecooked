@@ -102,9 +102,11 @@ export function Header() {
                       {isCook ? "My Kitchen" : "My Profile"}
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href="/orders" className="w-full">My Orders</Link>
-                  </DropdownMenuItem>
+                  {!isCook && (
+                    <DropdownMenuItem>
+                      <Link href="/orders" className="w-full">My Orders</Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
                     Log out

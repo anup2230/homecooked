@@ -7,12 +7,14 @@ import { DishCard } from "@/components/dish-card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { Edit, PlusCircle } from "lucide-react";
+import { DollarSign, Edit, PlusCircle, ShoppingCart, Star } from "lucide-react";
 
 export default function CookProfilePage() {
   // Mocking the logged-in user as a cook
   const currentCook = mockUsers[2]; // Nonna Isabella
   const cookDishes = mockDishes.filter(dish => dish.provider.id === currentCook.id);
+  const totalRevenue = mockSales.reduce((acc, sale) => acc + sale.totalPrice, 0);
+  const totalDishesSold = mockSales.reduce((acc, sale) => acc + sale.quantity, 0);
 
   return (
     <div className="container py-8">
@@ -35,9 +37,10 @@ export default function CookProfilePage() {
       </div>
 
       <Tabs defaultValue="listings" className="w-full">
-        <TabsList className="grid w-full max-w-sm grid-cols-2">
+        <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="listings">My Listings</TabsTrigger>
           <TabsTrigger value="sales">My Sales</TabsTrigger>
+          <TabsTrigger value="metrics">Metrics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="listings">
@@ -104,6 +107,49 @@ export default function CookProfilePage() {
                   ))}
                 </TableBody>
               </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="metrics">
+           <Card>
+            <CardHeader>
+                <CardTitle>Your Performance</CardTitle>
+                <CardDescription>An overview of your kitchen's metrics.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-3">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+                    <p className="text-xs text-muted-foreground">from {mockSales.length} orders</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Dishes Sold</CardTitle>
+                    <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">+{totalDishesSold}</div>
+                    <p className="text-xs text-muted-foreground">across {cookDishes.length} listings</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
+                    <Star className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">4.9</div>
+                    <p className="text-xs text-muted-foreground">based on all dish reviews</p>
+                  </CardContent>
+                </Card>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
