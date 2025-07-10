@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import { DishCard } from "@/components/dish-card";
 import { mockDishes, mockTestimonials } from "@/lib/data";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight, Star, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -49,6 +50,30 @@ export default function HomePage() {
               <DishCard key={dish.id} dish={dish} />
             ))}
           </div>
+        </div>
+      </section>
+      
+      <section className="bg-background py-16 md:py-24">
+        <div className="container">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+                <div className="space-y-4 text-center md:text-left">
+                    <h2 className="text-3xl font-bold font-headline">Find Meals Near You</h2>
+                    <p className="text-muted-foreground text-lg">Discover talented home cooks in your neighborhood. See who's cooking nearby and enjoy fresh, locally-made food.</p>
+                    <Button>
+                        <MapPin className="mr-2 h-4 w-4" />
+                        Explore Local Map
+                    </Button>
+                </div>
+                <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg border">
+                    <Image
+                        src="https://placehold.co/800x450.png"
+                        alt="Map showing nearby cooks"
+                        fill
+                        className="object-cover"
+                        data-ai-hint="map city"
+                    />
+                </div>
+            </div>
         </div>
       </section>
 

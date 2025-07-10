@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, PlusCircle, Sparkles, X } from 'lucide-react';
 import { getTagSuggestions } from './actions';
@@ -22,9 +23,17 @@ const listingFormSchema = z.object({
   price: z.coerce.number().positive('Price must be a positive number.'),
   photo: z.any().refine(file => file, 'A photo of the dish is required.'),
   tags: z.array(z.string()).min(1, 'At least one tag is required.'),
+  deliveryOptions: z.array(z.string()).refine(value => value.some(item => item), {
+    message: "You have to select at least one delivery option.",
+  }),
 });
 
 type ListingFormValues = z.infer<typeof listingFormSchema>;
+
+const deliveryOptions = [
+  { id: 'pickup', label: 'Customer Pickup' },
+  { id: 'drop-off', label: 'Local Drop-off' },
+] as const;
 
 export function CreateListingForm() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -40,6 +49,7 @@ export function CreateListingForm() {
       description: '',
       price: 0,
       tags: [],
+      deliveryOptions: ['pickup'],
     },
   });
   
@@ -81,7 +91,6 @@ export function CreateListingForm() {
     const trimmedTag = tag.trim();
     if (trimmedTag && !fields.some(field => field.value === trimmedTag)) {
       append(trimmedTag);
-      // Remove from suggestions if it was there
       setSuggestedTags(prev => prev.filter(t => t.toLowerCase() !== trimmedTag.toLowerCase()));
     }
   };
@@ -168,12 +177,61 @@ export function CreateListingForm() {
                 />
                 {imagePreview && (
                   <div className="relative w-full h-48 rounded-md overflow-hidden border">
-                    <Image src={imagePreview} alt="Dish preview" layout="fill" objectFit="cover" />
+                    <Image src={imagePreview} alt="Dish preview" fill objectFit="cover" />
                   </div>
                 )}
               </div>
             </div>
             
+            <FormField
+              control={form.control}
+              name="deliveryOptions"
+              render={() => (
+                <FormItem>
+                  <div className="mb-4">
+                    <FormLabel className="text-base">Delivery Options</FormLabel>
+                    <FormDescription>
+                      Select how customers can receive this dish.
+                    </FormDescription>
+                  </div>
+                  {deliveryOptions.map((item) => (
+                    <FormField
+                      key={item.id}
+                      control={form.control}
+                      name="deliveryOptions"
+                      render={({ field }) => {
+                        return (
+                          <FormItem
+                            key={item.id}
+                            className="flex flex-row items-start space-x-3 space-y-0"
+                          >
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value?.includes(item.id)}
+                                onCheckedChange={(checked) => {
+                                  return checked
+                                    ? field.onChange([...field.value, item.id])
+                                    : field.onChange(
+                                        field.value?.filter(
+                                          (value) => value !== item.id
+                                        )
+                                      )
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              {item.label}
+                            </FormLabel>
+                          </FormItem>
+                        )
+                      }}
+                    />
+                  ))}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormItem>
               <FormLabel>Tags</FormLabel>
               <div className="flex flex-wrap gap-2">

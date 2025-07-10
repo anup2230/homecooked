@@ -5,6 +5,8 @@ export type User = {
   isProvider: boolean;
 };
 
+export type DeliveryOption = 'pickup' | 'drop-off';
+
 export type Dish = {
   id: string;
   name: string;
@@ -16,6 +18,7 @@ export type Dish = {
   reviewCount: number;
   category: string;
   dietary?: ('vegetarian' | 'vegan' | 'gluten-free')[];
+  deliveryOptions?: DeliveryOption[];
   'data-ai-hint'?: string;
 };
 

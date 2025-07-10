@@ -19,7 +19,8 @@ export const mockDishes: Dish[] = [
     rating: 4.8,
     reviewCount: 45,
     category: 'Italian',
-    'data-ai-hint': 'beef lasagna'
+    'data-ai-hint': 'beef lasagna',
+    deliveryOptions: ['pickup', 'drop-off'],
   },
   {
     id: 'dish-2',
@@ -32,7 +33,8 @@ export const mockDishes: Dish[] = [
     reviewCount: 32,
     category: 'British',
     dietary: ['vegan', 'gluten-free'],
-    'data-ai-hint': 'shepherds pie'
+    'data-ai-hint': 'shepherds pie',
+    deliveryOptions: ['pickup'],
   },
   {
     id: 'dish-3',
@@ -44,7 +46,8 @@ export const mockDishes: Dish[] = [
     rating: 5.0,
     reviewCount: 89,
     category: 'Italian',
-    'data-ai-hint': 'italian meatballs'
+    'data-ai-hint': 'italian meatballs',
+    deliveryOptions: ['pickup', 'drop-off'],
   },
   {
     id: 'dish-4',
@@ -57,7 +60,8 @@ export const mockDishes: Dish[] = [
     reviewCount: 51,
     category: 'Chinese',
     dietary: ['vegetarian'],
-    'data-ai-hint': 'mapo tofu'
+    'data-ai-hint': 'mapo tofu',
+    deliveryOptions: ['drop-off'],
   },
   {
     id: 'dish-5',
@@ -69,7 +73,8 @@ export const mockDishes: Dish[] = [
     rating: 4.8,
     reviewCount: 62,
     category: 'American',
-    'data-ai-hint': 'chicken pot'
+    'data-ai-hint': 'chicken pot',
+    deliveryOptions: ['pickup'],
   },
   {
     id: 'dish-6',
@@ -82,7 +87,8 @@ export const mockDishes: Dish[] = [
     reviewCount: 25,
     category: 'Salad',
     dietary: ['vegan', 'gluten-free'],
-    'data-ai-hint': 'quinoa salad'
+    'data-ai-hint': 'quinoa salad',
+    deliveryOptions: ['pickup', 'drop-off'],
   },
    {
     id: 'dish-7',
@@ -94,7 +100,8 @@ export const mockDishes: Dish[] = [
     rating: 4.9,
     reviewCount: 78,
     category: 'Dessert',
-    'data-ai-hint': 'tiramisu dessert'
+    'data-ai-hint': 'tiramisu dessert',
+    deliveryOptions: ['pickup'],
   },
   {
     id: 'dish-8',
@@ -106,7 +113,8 @@ export const mockDishes: Dish[] = [
     rating: 4.8,
     reviewCount: 66,
     category: 'Chinese',
-    'data-ai-hint': 'dan dan'
+    'data-ai-hint': 'dan dan',
+    deliveryOptions: ['drop-off'],
   },
 ];
 

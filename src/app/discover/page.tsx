@@ -1,3 +1,7 @@
+
+"use client";
+
+import { useState } from 'react';
 import { DishCard } from "@/components/dish-card";
 import {
   Carousel,
@@ -6,7 +10,9 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { Button } from '@/components/ui/button';
 import { mockDishes } from "@/lib/data";
+import type { DeliveryOption } from '@/lib/types';
 
 const categories = [
     'Italian',
@@ -20,10 +26,16 @@ const categories = [
 ];
 
 export default function DiscoverPage() {
-    
+  const [deliveryFilter, setDeliveryFilter] = useState<DeliveryOption | 'all'>('all');
+
+  const filteredDishes = mockDishes.filter(dish => {
+    if (deliveryFilter === 'all') return true;
+    return dish.deliveryOptions?.includes(deliveryFilter);
+  });
+
   return (
     <div className="container py-10">
-      <div className="text-center mb-12">
+      <div className="text-center mb-8">
         <h1 className="text-4xl md:text-5xl font-bold font-headline text-primary tracking-tight">
           Discover Your Next Favorite Meal
         </h1>
@@ -32,9 +44,30 @@ export default function DiscoverPage() {
         </p>
       </div>
 
+      <div className="flex justify-center gap-4 mb-12">
+        <Button
+          variant={deliveryFilter === 'all' ? 'default' : 'outline'}
+          onClick={() => setDeliveryFilter('all')}
+        >
+          All Dishes
+        </Button>
+        <Button
+          variant={deliveryFilter === 'pickup' ? 'default' : 'outline'}
+          onClick={() => setDeliveryFilter('pickup')}
+        >
+          Pickup
+        </Button>
+        <Button
+          variant={deliveryFilter === 'drop-off' ? 'default' : 'outline'}
+          onClick={() => setDeliveryFilter('drop-off')}
+        >
+          Drop-off
+        </Button>
+      </div>
+
       <div className="space-y-12">
         {categories.map((category) => {
-            const dishesForCategory = mockDishes.filter(dish => dish.category === category);
+            const dishesForCategory = filteredDishes.filter(dish => dish.category === category);
             if (dishesForCategory.length === 0) return null;
 
             return (
