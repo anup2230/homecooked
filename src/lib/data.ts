@@ -1,4 +1,4 @@
-import type { User, Dish, Review, Order, Testimonial } from '@/lib/types';
+import type { User, Dish, Review, Order, Testimonial, Sale } from '@/lib/types';
 
 export const mockUsers: User[] = [
   { id: 'user-1', name: 'Maria Garcia', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true },
@@ -6,6 +6,9 @@ export const mockUsers: User[] = [
   { id: 'user-3', name: 'Nonna Isabella', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true },
   { id: 'user-4', name: 'Chen Wang', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true },
   { id: 'user-5', name: 'Alice Johnson', avatarUrl: 'https://placehold.co/100x100.png', isProvider: false },
+  { id: 'user-6', name: 'David Lee', avatarUrl: 'https://placehold.co/100x100.png', isProvider: false },
+  { id: 'user-7', name: 'Sarah Chen', avatarUrl: 'https://placehold.co/100x100.png', isProvider: false },
+
 ];
 
 export const mockDishes: Dish[] = [
@@ -122,7 +125,7 @@ export const mockReviews: Review[] = [
   {
     id: 'review-1',
     dishId: 'dish-3',
-    user: { name: 'David Lee', avatarUrl: 'https://placehold.co/100x100.png' },
+    user: { name: mockUsers[5].name, avatarUrl: mockUsers[5].avatarUrl },
     rating: 5,
     comment: 'Absolutely the best meatballs I have ever had. Tasted just like my own nonna\'s. Will be ordering again... and again!',
     date: '2024-05-18'
@@ -130,7 +133,7 @@ export const mockReviews: Review[] = [
   {
     id: 'review-2',
     dishId: 'dish-3',
-    user: { name: 'Sarah Chen', avatarUrl: 'https://placehold.co/100x100.png' },
+    user: { name: mockUsers[6].name, avatarUrl: mockUsers[6].avatarUrl },
     rating: 5,
     comment: 'Incredible! The sauce is rich and the meatballs are so tender. A must-try.',
     date: '2024-05-16'
@@ -183,6 +186,36 @@ export const mockOrders: Order[] = [
     dish: mockDishes[6],
     quantity: 2,
     totalPrice: 19.00,
+    status: 'Preparing',
+    orderDate: '2024-05-22'
+  }
+];
+
+export const mockSales: Sale[] = [
+  {
+    id: 'order-1',
+    dishName: mockDishes[2].name,
+    customerName: 'David Lee',
+    quantity: 2,
+    totalPrice: 44.00,
+    status: 'Completed',
+    orderDate: '2024-05-18'
+  },
+  {
+    id: 'order-3',
+    dishName: mockDishes[6].name,
+    customerName: 'Alice Johnson',
+    quantity: 1,
+    totalPrice: 9.50,
+    status: 'Ready for Pickup',
+    orderDate: '2024-05-21'
+  },
+   {
+    id: 'order-4',
+    dishName: mockDishes[2].name,
+    customerName: 'Sarah Chen',
+    quantity: 1,
+    totalPrice: 22.00,
     status: 'Preparing',
     orderDate: '2024-05-22'
   }

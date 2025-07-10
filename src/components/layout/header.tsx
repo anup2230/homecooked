@@ -17,12 +17,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Icons } from "@/components/icons"
-import { Search, UtensilsCrossed } from "lucide-react"
+import { Search } from "lucide-react"
 
 export function Header() {
-  // Mock logged-in state
-  const isLoggedIn = false;
-  const user = { name: "Jane Doe", email: "jane.doe@example.com", avatarUrl: "https://placehold.co/100x100.png" };
+  // Mock logged-in state. We'll toggle between a cook and a consumer.
+  const isLoggedIn = true; 
+  // Set to true for a cook, false for a consumer to see the difference.
+  const isCook = true; 
+
+  const consumerUser = { name: "Alice Johnson", email: "alice.j@example.com", avatarUrl: "https://placehold.co/100x100.png" };
+  const cookUser = { name: "Nonna Isabella", email: "nonna.isabella@example.com", avatarUrl: "https://placehold.co/100x100.png" };
+  const user = isCook ? cookUser : consumerUser;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -93,7 +98,9 @@ export function Header() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
-                    <Link href="/profile/me" className="w-full">Profile</Link>
+                    <Link href={isCook ? "/profile/cook" : "/profile/me"} className="w-full">
+                      {isCook ? "My Kitchen" : "My Profile"}
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Link href="/orders" className="w-full">My Orders</Link>

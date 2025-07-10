@@ -43,6 +43,16 @@ export type Order = {
   orderDate: string;
 };
 
+export type Sale = {
+  id: string;
+  dishName: string;
+  customerName: string;
+  quantity: number;
+  totalPrice: number;
+  status: 'Pending Confirmation' | 'Preparing' | 'Ready for Pickup' | 'Completed' | 'Cancelled';
+  orderDate: string;
+}
+
 export type Testimonial = {
   id: string;
   name: string;
