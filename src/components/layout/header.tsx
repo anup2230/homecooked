@@ -21,7 +21,7 @@ import { Search, UtensilsCrossed } from "lucide-react"
 
 export function Header() {
   // Mock logged-in state
-  const isLoggedIn = true;
+  const isLoggedIn = false;
   const user = { name: "Jane Doe", email: "jane.doe@example.com", avatarUrl: "https://placehold.co/100x100.png" };
 
   return (
