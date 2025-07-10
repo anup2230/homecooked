@@ -46,10 +46,12 @@ export default function MapPage() {
                   </Avatar>
                   <div>
                     <h2 className="text-2xl font-bold font-headline">{provider.name}'s Kitchen</h2>
-                    <div className="flex items-center text-muted-foreground">
-                      <MapPin className="h-4 w-4 mr-1.5" />
-                      <span>Approx. 2 miles away</span>
-                    </div>
+                    {provider.distance && (
+                      <div className="flex items-center text-muted-foreground">
+                        <MapPin className="h-4 w-4 mr-1.5" />
+                        <span>{provider.distance}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 

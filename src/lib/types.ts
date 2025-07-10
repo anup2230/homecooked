@@ -3,6 +3,7 @@ export type User = {
   name: string;
   avatarUrl: string;
   isProvider: boolean;
+  distance?: string;
 };
 
 export type DeliveryOption = 'pickup' | 'drop-off';

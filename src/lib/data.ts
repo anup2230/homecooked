@@ -1,10 +1,10 @@
 import type { User, Dish, Review, Order, Testimonial, Sale } from '@/lib/types';
 
 export const mockUsers: User[] = [
-  { id: 'user-1', name: 'Maria Garcia', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true },
-  { id: 'user-2', name: 'John Smith', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true },
-  { id: 'user-3', name: 'Nonna Isabella', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true },
-  { id: 'user-4', name: 'Chen Wang', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true },
+  { id: 'user-1', name: 'Maria Garcia', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true, distance: 'Approx. 1.2 miles away' },
+  { id: 'user-2', name: 'John Smith', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true, distance: 'Approx. 3.5 miles away' },
+  { id: 'user-3', name: 'Nonna Isabella', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true, distance: 'Approx. 0.8 miles away' },
+  { id: 'user-4', name: 'Chen Wang', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true, distance: 'Approx. 4.1 miles away' },
   { id: 'user-5', name: 'Alice Johnson', avatarUrl: 'https://placehold.co/100x100.png', isProvider: false },
   { id: 'user-6', name: 'David Lee', avatarUrl: 'https://placehold.co/100x100.png', isProvider: false },
   { id: 'user-7', name: 'Sarah Chen', avatarUrl: 'https://placehold.co/100x100.png', isProvider: false },
