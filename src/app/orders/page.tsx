@@ -20,7 +20,7 @@ export default function OrdersPage() {
         <CardHeader>
           <CardTitle>My Orders</CardTitle>
           <CardDescription>
-            A list of your recent food orders on Local Eats Hub.
+            A list of your recent food orders on Homecooked.
           </CardDescription>
         </CardHeader>
         <CardContent>

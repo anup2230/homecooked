@@ -105,7 +105,7 @@ export function CreateListingForm() {
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-headline">List a new dish</CardTitle>
-        <CardDescription>Fill out the details below to add your creation to Local Eats Hub.</CardDescription>
+        <CardDescription>Fill out the details below to add your creation to Homecooked.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>

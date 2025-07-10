@@ -44,6 +44,12 @@ export function Header() {
             >
               Sell Food
             </Link>
+             <Link
+              href="/about"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              About
+            </Link>
           </nav>
         </div>
         
