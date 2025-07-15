@@ -4,6 +4,7 @@ export type User = {
   avatarUrl: string;
   isProvider: boolean;
   distance?: string;
+  location?: string;
 };
 
 export type DeliveryOption = 'pickup' | 'drop-off';

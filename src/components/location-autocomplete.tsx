@@ -37,9 +37,8 @@ export function LocationAutocomplete({ value, onChange, onSelect }: LocationAuto
         <div className="relative">
              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
              <Input 
-                value="Google Maps API Key missing. Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in your .env file." 
-                className="pl-10 h-12 text-base text-destructive"
-                disabled 
+                value="Enter your city to show local results" 
+                className="pl-10 text-base"
             />
         </div>
     );
@@ -56,8 +55,8 @@ export function LocationAutocomplete({ value, onChange, onSelect }: LocationAuto
         onChange={onChange}
         onSelect={handleSelect}
         searchOptions={{
-            types: ['address', 'geocode'],
-            componentRestrictions: { country: 'us' } // Optional: restrict to a country
+            types: ['(cities)'],
+            componentRestrictions: { country: 'us' } 
         }}
       >
         {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
@@ -65,8 +64,8 @@ export function LocationAutocomplete({ value, onChange, onSelect }: LocationAuto
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               {...getInputProps({
-                placeholder: 'Enter your address, neighborhood, or zip code',
-                className: 'pl-10 h-12 text-base',
+                placeholder: 'Enter your city to show local results',
+                className: 'pl-10 text-base bg-blue-50 border-blue-200 text-blue-700 placeholder:text-blue-700',
               })}
             />
             {suggestions.length > 0 && (
