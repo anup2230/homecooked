@@ -8,6 +8,8 @@ import { icon } from 'leaflet';
 import type { Dish } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import "leaflet/dist/leaflet.css"
+
 
 // Define a custom icon for map markers
 const MarkerIcon = icon({
