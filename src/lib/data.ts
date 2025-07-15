@@ -1,10 +1,10 @@
 import type { User, Dish, Review, Order, Testimonial, Sale } from '@/lib/types';
 
 export const mockUsers: User[] = [
-  { id: 'user-1', name: 'Maria Garcia', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true, distance: 'Approx. 1.2 miles away', location: 'San Francisco, CA' },
-  { id: 'user-2', name: 'John Smith', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true, distance: 'Approx. 3.5 miles away', location: 'Richmond, CA' },
-  { id: 'user-3', name: 'Nonna Isabella', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true, distance: 'Approx. 0.8 miles away', location: 'San Francisco, CA' },
-  { id: 'user-4', name: 'Chen Wang', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true, distance: 'Approx. 4.1 miles away', location: 'San Leandro, CA' },
+  { id: 'user-1', name: 'Maria Garcia', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true, distance: 'Approx. 1.2 miles away', location: 'San Francisco, CA', description: 'Specializing in authentic Spanish tapas and paella, made with love.' },
+  { id: 'user-2', name: 'John Smith', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true, distance: 'Approx. 3.5 miles away', location: 'Richmond, CA', description: 'Healthy, hearty, and wholesome meals. Vegan and gluten-free options available!' },
+  { id: 'user-3', name: 'Nonna Isabella', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true, distance: 'Approx. 0.8 miles away', location: 'San Francisco, CA', description: 'Generations of family recipes. Every dish is made with love and the freshest ingredients.' },
+  { id: 'user-4', name: 'Chen Wang', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true, distance: 'Approx. 4.1 miles away', location: 'San Leandro, CA', description: 'Authentic Szechuan cuisine that brings the heat. Not for the faint of heart!' },
   { id: 'user-5', name: 'Alice Johnson', avatarUrl: 'https://placehold.co/100x100.png', isProvider: false, location: 'Daly City, CA' },
   { id: 'user-6', name: 'David Lee', avatarUrl: 'https://placehold.co/100x100.png', isProvider: false, location: 'Sacramento, CA' },
   { id: 'user-7', name: 'Sarah Chen', avatarUrl: 'https://placehold.co/100x100.png', isProvider: false, location: 'San Francisco, CA' },

@@ -13,18 +13,21 @@ export function KitchenResultCard({ provider, dishes }: KitchenResultCardProps) 
 
   return (
     <div>
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-start gap-4 mb-4">
         <Avatar className="h-16 w-16 border-2 border-primary">
           <AvatarImage src={provider.avatarUrl} alt={provider.name} />
           <AvatarFallback>{provider.name.charAt(0)}</AvatarFallback>
         </Avatar>
-        <div>
+        <div className="flex-1">
           <h2 className="text-2xl font-bold font-headline">{provider.name}'s Kitchen</h2>
           {provider.location && (
-            <div className="flex items-center text-muted-foreground">
+            <div className="flex items-center text-sm text-muted-foreground">
               <MapPin className="h-4 w-4 mr-1.5" />
               <span>{provider.location}</span>
             </div>
+          )}
+          {provider.description && (
+            <p className="mt-1 text-sm text-muted-foreground">{provider.description}</p>
           )}
         </div>
       </div>

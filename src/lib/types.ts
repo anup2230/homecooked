@@ -5,6 +5,7 @@ export type User = {
   isProvider: boolean;
   distance?: string;
   location?: string;
+  description?: string;
 };
 
 export type DeliveryOption = 'pickup' | 'drop-off';

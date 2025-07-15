@@ -32,7 +32,7 @@ export default function CookProfilePage() {
         <div>
           <h1 className="text-4xl font-bold font-headline">{currentCook.name}'s Kitchen</h1>
           <p className="text-muted-foreground">Cook since May 2024</p>
-          <p className="mt-2 max-w-prose">Passionate home cook sharing generations of family recipes. Every dish is made with love and the freshest ingredients. Buon appetito!</p>
+          <p className="mt-2 max-w-prose">{currentCook.description}</p>
         </div>
       </div>
 
