@@ -2,25 +2,16 @@
 "use client";
 
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
 import { DishCard } from "@/components/dish-card";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { mockDishes } from "@/lib/data";
-import type { DeliveryOption, Dish } from '@/lib/types';
-import { MapPin, LayoutGrid, Map as MapIcon, Loader2 } from 'lucide-react';
+import type { DeliveryOption } from '@/lib/types';
+import { MapPin } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
-
-// Dynamically import the map component to avoid SSR issues with Leaflet
-const Map = dynamic(() => import('@/components/map'), { 
-  ssr: false,
-  loading: () => <Skeleton className="h-full w-full" />,
-});
 
 export default function DiscoverPage() {
   const [deliveryFilter, setDeliveryFilter] = useState<DeliveryOption | 'all'>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
 
   const filteredDishes = mockDishes.filter(dish => {
     if (deliveryFilter === 'all') return true;
@@ -53,24 +44,6 @@ export default function DiscoverPage() {
       </div>
 
       <div className="flex justify-center items-center gap-4 mb-8 shrink-0">
-        <div className="flex gap-2 p-1 bg-muted rounded-lg">
-           <Button
-            variant={viewMode === 'grid' ? 'default' : 'ghost'}
-            onClick={() => setViewMode('grid')}
-            className="h-9 px-4"
-          >
-            <LayoutGrid className="mr-2 h-4 w-4" />
-            Grid
-          </Button>
-          <Button
-            variant={viewMode === 'map' ? 'default' : 'ghost'}
-            onClick={() => setViewMode('map')}
-             className="h-9 px-4"
-          >
-            <MapIcon className="mr-2 h-4 w-4" />
-            Map
-          </Button>
-        </div>
         <div className="flex gap-2">
             <Button
               variant={deliveryFilter === 'all' ? 'outline' : 'ghost'}
@@ -96,28 +69,13 @@ export default function DiscoverPage() {
         </div>
       </div>
 
-      {viewMode === 'grid' ? (
-         <ScrollArea className="flex-grow">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 pb-10">
-            {filteredDishes.map((dish) => (
-                <DishCard key={dish.id} dish={dish} />
-            ))}
-          </div>
-        </ScrollArea>
-      ) : (
-        <div className="flex-grow grid md:grid-cols-2 gap-4 overflow-hidden">
-          <div className="relative h-full w-full bg-muted rounded-lg overflow-hidden border">
-             <Map dishes={filteredDishes} />
-          </div>
-          <ScrollArea className="h-full">
-            <div className="space-y-4 pr-4 pb-10">
-                {filteredDishes.map((dish) => (
-                    <DishCard key={dish.id} dish={dish} />
-                ))}
-            </div>
-          </ScrollArea>
+       <ScrollArea className="flex-grow">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 pb-10">
+          {filteredDishes.map((dish) => (
+              <DishCard key={dish.id} dish={dish} />
+          ))}
         </div>
-      )}
+      </ScrollArea>
     </div>
   );
 }
