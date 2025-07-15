@@ -13,7 +13,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Bell, PlusCircle, Soup, Pizza, Vegan, Star } from 'lucide-react';
+import { Search, Soup, Pizza, Vegan, Star } from 'lucide-react';
 
 const categories = [
     { id: 'italian', name: 'Italian', icon: Pizza },
@@ -65,12 +65,6 @@ export default function DiscoverPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
-            <Button variant="outline" className="w-full mt-2 justify-start text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100">
-                <Bell className="mr-2"/> Notify Me
-            </Button>
-            <Button variant="outline" className="w-full mt-2 justify-start text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100">
-                <PlusCircle className="mr-2"/> Create new listing
-            </Button>
           </div>
 
           <div className="space-y-4">
