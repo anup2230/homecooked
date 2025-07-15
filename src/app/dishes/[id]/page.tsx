@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Star, ChevronLeft } from "lucide-react";
+import { Star, ChevronLeft, MessageCircle } from "lucide-react";
 
 const StarRating = ({ rating, className }: { rating: number, className?: string }) => {
   return (
@@ -24,7 +24,7 @@ const StarRating = ({ rating, className }: { rating: number, className?: string 
   );
 };
 
-export default function DishDetailPage({ params }: { params: { id: string } }) {
+export default function DishDetailPage({ params }: { params: { id:string } }) {
   const dish = mockDishes.find((d) => d.id === params.id);
   const reviews = mockReviews.filter((r) => r.dishId === params.id);
 
@@ -32,7 +32,7 @@ export default function DishDetailPage({ params }: { params: { id: string } }) {
     notFound();
   }
 
-  const averageRating = reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length;
+  const averageRating = reviews.length > 0 ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length : 0;
 
   return (
     <div className="container py-8">
@@ -85,8 +85,15 @@ export default function DishDetailPage({ params }: { params: { id: string } }) {
               </div>
             </div>
           )}
-
-          <Button size="lg" className="w-full">Order Now</Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button size="lg">Order Now</Button>
+            <Button asChild size="lg" variant="outline">
+                <Link href="/messages">
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Ask a question
+                </Link>
+            </Button>
+          </div>
         </div>
       </div>
       
@@ -94,33 +101,39 @@ export default function DishDetailPage({ params }: { params: { id: string } }) {
 
       <div className="max-w-4xl mx-auto">
         <h2 className="text-3xl font-bold text-center mb-8">Reviews ({reviews.length})</h2>
-        <div className="flex justify-center items-center gap-2 mb-8">
-           <StarRating rating={averageRating} />
-           <span className="font-bold text-lg">{averageRating.toFixed(1)}</span>
-           <span className="text-muted-foreground">average rating</span>
-        </div>
-        <div className="space-y-6">
-          {reviews.map(review => (
-            <Card key={review.id}>
-              <CardHeader className="flex flex-row items-center gap-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={review.user.avatarUrl} alt={review.user.name} />
-                  <AvatarFallback>{review.user.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <CardTitle className="text-base font-bold">{review.user.name}</CardTitle>
-                  <div className="flex items-center gap-2">
-                    <StarRating rating={review.rating} />
-                    <p className="text-xs text-muted-foreground">{review.date}</p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{review.comment}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {reviews.length > 0 ? (
+          <>
+            <div className="flex justify-center items-center gap-2 mb-8">
+              <StarRating rating={averageRating} />
+              <span className="font-bold text-lg">{averageRating.toFixed(1)}</span>
+              <span className="text-muted-foreground">average rating</span>
+            </div>
+            <div className="space-y-6">
+              {reviews.map(review => (
+                <Card key={review.id}>
+                  <CardHeader className="flex flex-row items-center gap-4">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={review.user.avatarUrl} alt={review.user.name} />
+                      <AvatarFallback>{review.user.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <CardTitle className="text-base font-bold">{review.user.name}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <StarRating rating={review.rating} />
+                        <p className="text-xs text-muted-foreground">{review.date}</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">{review.comment}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="text-center text-muted-foreground">This dish has no reviews yet.</p>
+        )}
       </div>
     </div>
   );

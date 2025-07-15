@@ -85,7 +85,9 @@ export default function OrdersPage() {
                         <DropdownMenuItem asChild>
                           <Link href={`/dishes/${order.dish.id}`}>View Dish</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>Contact Provider</DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                           <Link href="/messages">Contact Provider</Link>
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

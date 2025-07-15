@@ -1,4 +1,4 @@
-import type { User, Dish, Review, Order, Testimonial, Sale } from '@/lib/types';
+import type { User, Dish, Review, Order, Testimonial, Sale, Conversation, Message } from '@/lib/types';
 
 export const mockUsers: User[] = [
   { id: 'user-1', name: 'Maria Garcia', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true, distance: 'Approx. 1.2 miles away', location: 'San Francisco, CA', description: 'Specializing in authentic Spanish tapas and paella, made with love.' },
@@ -8,7 +8,6 @@ export const mockUsers: User[] = [
   { id: 'user-5', name: 'Alice Johnson', avatarUrl: 'https://placehold.co/100x100.png', isProvider: false, location: 'Daly City, CA' },
   { id: 'user-6', name: 'David Lee', avatarUrl: 'https://placehold.co/100x100.png', isProvider: false, location: 'Sacramento, CA' },
   { id: 'user-7', name: 'Sarah Chen', avatarUrl: 'https://placehold.co/100x100.png', isProvider: false, location: 'San Francisco, CA' },
-
 ];
 
 export const mockDishes: Dish[] = [
@@ -295,4 +294,32 @@ export const mockTestimonials: Testimonial[] = [
     avatarUrl: 'https://placehold.co/100x100.png',
     comment: 'As a busy professional, I barely have time to cook. Homecooked lets me enjoy a real, comforting meal without the hassle. The Pot Pie was amazing!'
   },
+];
+
+const loggedInUserId = 'user-3'; // Mocking Nonna Isabella as logged in user
+
+export const mockMessages: Message[] = [
+    { id: 'msg-1', senderId: 'user-5', text: 'Hi Nonna! I was wondering if the meatballs contain any nuts? My son has an allergy.', timestamp: '10:30 AM' },
+    { id: 'msg-2', senderId: loggedInUserId, text: 'Ciao Alice! No, there are no nuts in the meatballs. The recipe is completely nut-free.', timestamp: '10:32 AM' },
+    { id: 'msg-3', senderId: 'user-5', text: 'That\'s wonderful to hear! Thank you so much for the quick reply. I\'ll place an order now.', timestamp: '10:33 AM' },
+    { id: 'msg-4', senderId: 'user-6', text: 'Hello! I saw your Tiramisu, it looks amazing! Is it possible to order a larger one for a party?', timestamp: 'Yesterday' },
+    { id: 'msg-5', senderId: loggedInUserId, text: 'Hi David! Absolutely, I can make a larger format Tiramisu. How many people are you expecting?', timestamp: 'Yesterday' },
+];
+
+export const mockConversations: Conversation[] = [
+    {
+        id: 'conv-1',
+        participants: [mockUsers.find(u => u.id === 'user-5')!, mockUsers.find(u => u.id === loggedInUserId)!],
+        messages: [mockMessages[0], mockMessages[1], mockMessages[2]],
+    },
+    {
+        id: 'conv-2',
+        participants: [mockUsers.find(u => u.id === 'user-6')!, mockUsers.find(u => u.id === loggedInUserId)!],
+        messages: [mockMessages[3], mockMessages[4]],
+    },
+    {
+        id: 'conv-3',
+        participants: [mockUsers.find(u => u.id === 'user-1')!, mockUsers.find(u => u.id === loggedInUserId)!],
+        messages: [{id: 'msg-6', senderId: 'user-1', text: 'Just wanted to say I loved the Paella. Reminded me of my home in Valencia!', timestamp: '3 days ago'}],
+    },
 ];

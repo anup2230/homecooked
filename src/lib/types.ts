@@ -64,3 +64,16 @@ export type Testimonial = {
   avatarUrl: string;
   comment: string;
 };
+
+export type Message = {
+  id: string;
+  senderId: string;
+  text: string;
+  timestamp: string;
+}
+
+export type Conversation = {
+  id: string;
+  participants: User[];
+  messages: Message[];
+}
