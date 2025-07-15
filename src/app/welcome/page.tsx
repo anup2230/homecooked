@@ -15,7 +15,12 @@ const roles: { id: Role; title: string; description: string; icon: React.ReactNo
   { id: 'both', title: 'Both!', description: 'Explore the marketplace and share your own creations.', icon: <Users className="w-8 h-8" /> },
 ];
 
-const interests = ['Italian', 'Mexican', 'Chinese', 'Vegan', 'Desserts', 'Spicy', 'Healthy', 'BBQ'];
+const interests = [
+    'Italian', 'Mexican', 'Chinese', 'Japanese', 'Indian', 'Thai', 
+    'Vietnamese', 'Korean', 'Mediterranean', 'French', 'Spanish', 'Greek', 
+    'Caribbean', 'African', 'Brazilian', 'Vegan', 'Vegetarian', 'Gluten-Free', 
+    'Desserts', 'Spicy', 'Healthy', 'BBQ', 'Seafood', 'Comfort Food'
+];
 
 export default function WelcomePage() {
   const [step, setStep] = useState(1);
