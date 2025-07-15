@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
 import {
   Avatar,
   AvatarFallback,
@@ -19,24 +18,10 @@ import {
 import { Input } from "@/components/ui/input"
 import { Icons } from "@/components/icons"
 import { Search } from "lucide-react"
+import { useAuth } from "@/context/auth-context"
 
 export function Header() {
-  // Mock logged-in state with component state
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  // Set to true for a cook, false for a consumer to see the difference.
-  const [isCook, setIsCook] = useState(true); 
-
-  const consumerUser = { name: "Alice Johnson", email: "alice.j@example.com", avatarUrl: "https://placehold.co/100x100.png" };
-  const cookUser = { name: "Nonna Isabella", email: "nonna.isabella@example.com", avatarUrl: "https://placehold.co/100x100.png" };
-  const user = isCook ? cookUser : consumerUser;
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-  };
-  
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-  }
+  const { isLoggedIn, isCook, user, login, logout } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -120,14 +105,14 @@ export function Header() {
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                  <DropdownMenuItem onClick={logout} className="cursor-pointer">
                     Log out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <div className="flex items-center gap-2">
-                 <Button variant="ghost" asChild><Link href="/login" onClick={handleLogin}>Log In</Link></Button>
+                 <Button variant="ghost" asChild><Link href="/login" onClick={login}>Log In</Link></Button>
                  <Button asChild><Link href="/signup">Sign Up</Link></Button>
               </div>
             )}

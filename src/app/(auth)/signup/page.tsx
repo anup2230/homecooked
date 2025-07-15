@@ -1,10 +1,33 @@
+"use client";
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/auth-context';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { Loader2 } from 'lucide-react';
 
 export default function SignupPage() {
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      router.push('/');
+    }
+  }, [isLoggedIn, router]);
+
+  if (isLoggedIn) {
+    return (
+      <div className="container flex h-[calc(100vh-3.5rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="container flex h-[calc(100vh-3.5rem)] items-center justify-center">
       <Card className="w-full max-w-sm">

@@ -1,9 +1,15 @@
+"use client";
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/auth-context';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
+import { Loader2 } from 'lucide-react';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -20,6 +26,23 @@ const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export default function LoginPage() {
+  const { isLoggedIn, login } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      router.push('/');
+    }
+  }, [isLoggedIn, router]);
+
+  if (isLoggedIn) {
+     return (
+      <div className="container flex h-[calc(100vh-3.5rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="container flex h-[calc(100vh-3.5rem)] items-center justify-center">
       <Card className="w-full max-w-sm">
@@ -39,7 +62,7 @@ export default function LoginPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" required />
             </div>
-            <Button className="w-full">Sign in</Button>
+            <Button className="w-full" onClick={login}>Sign in</Button>
           </div>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
