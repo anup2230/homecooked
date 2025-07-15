@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect } from 'react';
@@ -50,7 +51,7 @@ export default function HomePage() {
               <Link href="/discover">Discover Dishes</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-               <Link href="/sell">Become a Cook</Link>
+               <Link href="/sell">Join the Community</Link>
             </Button>
           </div>
         </div>
