@@ -1,7 +1,7 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PlacesAutocomplete, {
   geocodeByAddress,
   getLatLng,
@@ -18,6 +18,13 @@ interface LocationAutocompleteProps {
 }
 
 export function LocationAutocomplete({ value, onChange, onSelect }: LocationAutocompleteProps) {
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const handleSelect = async (address: string) => {
     onChange(address);
     try {
@@ -32,12 +39,12 @@ export function LocationAutocomplete({ value, onChange, onSelect }: LocationAuto
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-  if (!apiKey) {
+  if (!apiKey || !isMounted) {
     return (
         <div className="relative">
              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
              <Input 
-                value="Enter city (API key needed)" 
+                value={apiKey ? "Loading location..." : "Enter city (API key needed)"} 
                 className="pl-10 text-base bg-muted"
                 disabled
             />
@@ -49,48 +56,62 @@ export function LocationAutocomplete({ value, onChange, onSelect }: LocationAuto
     <>
       <Script
         src={`https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`}
-        strategy="beforeInteractive"
+        onLoad={() => setIsScriptLoaded(true)}
+        strategy="afterInteractive"
       />
-      <PlacesAutocomplete
-        value={value}
-        onChange={onChange}
-        onSelect={handleSelect}
-        searchOptions={{
-            types: ['(cities)', '(regions)'], // Allow for zip codes and cities
-        }}
-      >
-        {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
-          <div className="relative w-full">
-            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              {...getInputProps({
-                placeholder: 'Enter your city or zip code',
-                className: 'pl-10 text-base',
-              })}
-            />
-            {suggestions.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-md shadow-lg">
-                {loading && <div className="p-2">Loading...</div>}
-                {suggestions.map((suggestion, index) => {
-                  const className = suggestion.active
-                    ? 'bg-secondary'
-                    : 'bg-background';
-                  return (
-                    <div
-                      key={index}
-                      {...getSuggestionItemProps(suggestion, {
-                        className: cn('p-2 cursor-pointer hover:bg-secondary', className),
-                      })}
-                    >
-                      <span>{suggestion.description}</span>
-                    </div>
-                  );
+      {isScriptLoaded ? (
+        <PlacesAutocomplete
+          value={value}
+          onChange={onChange}
+          onSelect={handleSelect}
+          searchOptions={{
+              types: ['(cities)', '(regions)'], // Allow for zip codes and cities
+          }}
+        >
+          {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
+            <div className="relative w-full">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                {...getInputProps({
+                  placeholder: 'Enter your city or zip code',
+                  className: 'pl-10 text-base',
                 })}
-              </div>
-            )}
-          </div>
-        )}
-      </PlacesAutocomplete>
+              />
+              {suggestions.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-md shadow-lg">
+                  {loading && <div className="p-2">Loading...</div>}
+                  {suggestions.map((suggestion, index) => {
+                    const className = suggestion.active
+                      ? 'bg-secondary'
+                      : 'bg-background';
+                    return (
+                      <div
+                        key={index}
+                        {...getSuggestionItemProps(suggestion, {
+                          className: cn('p-2 cursor-pointer hover:bg-secondary', className),
+                        })}
+                      >
+                        <span>{suggestion.description}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </PlacesAutocomplete>
+      ) : (
+        <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input 
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder="Loading location..."
+              className="pl-10 text-base"
+              disabled
+          />
+      </div>
+      )}
     </>
   );
 }
