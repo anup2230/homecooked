@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { DishCard } from "@/components/dish-card";
 import { Button } from '@/components/ui/button';
-import { mockDishes } from "@/lib/data";
+import { mockDishes, mockUsers } from "@/lib/data";
 import type { DeliveryOption } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { LocationAutocomplete } from '@/components/location-autocomplete';
@@ -13,7 +13,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Soup, Pizza, Vegan, Star } from 'lucide-react';
+import { Search, Soup, Pizza, Vegan, Star, ChefHat, Utensils } from 'lucide-react';
+import { KitchenResultCard } from '@/components/kitchen-result-card';
 
 const categories = [
     { id: 'italian', name: 'Italian', icon: Pizza },
@@ -28,6 +29,9 @@ export default function DiscoverPage() {
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchMode, setSearchMode] = useState<'dishes' | 'kitchens'>('dishes');
+
+  const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
   const filteredDishes = mockDishes.filter(dish => {
     if (deliveryFilter !== 'all' && !dish.deliveryOptions?.includes(deliveryFilter)) {
@@ -40,7 +44,6 @@ export default function DiscoverPage() {
         return false;
     }
     if (searchTerm) {
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
         const inName = dish.name.toLowerCase().includes(lowerCaseSearchTerm);
         const inKitchen = dish.provider.name.toLowerCase().includes(lowerCaseSearchTerm);
         if (!inName && !inKitchen) {
@@ -50,9 +53,22 @@ export default function DiscoverPage() {
     return true;
   });
 
+  const allProviders = mockUsers.filter(u => u.isProvider);
+
+  const filteredProviders = allProviders.filter(provider => {
+    if (!searchTerm) return false; // Only show providers if there is a search term
+    return provider.name.toLowerCase().includes(lowerCaseSearchTerm);
+  });
+
   const handleLocationSelect = (address: string) => {
     setAddress(address);
   };
+
+  const showDishes = searchMode === 'dishes';
+  const showKitchens = searchMode === 'kitchens';
+
+  const displayedDishes = showDishes ? filteredDishes : [];
+  const displayedProviders = showKitchens ? filteredProviders : [];
 
   return (
     <div className="container mx-auto py-6 grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
@@ -69,6 +85,24 @@ export default function DiscoverPage() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+                <Button 
+                    variant={searchMode === 'dishes' ? 'secondary' : 'ghost'} 
+                    onClick={() => setSearchMode('dishes')}
+                    className="w-full justify-center"
+                >
+                    <Utensils className="mr-2 h-4 w-4"/>
+                    Dishes
+                </Button>
+                <Button 
+                    variant={searchMode === 'kitchens' ? 'secondary' : 'ghost'} 
+                    onClick={() => setSearchMode('kitchens')}
+                    className="w-full justify-center"
+                >
+                    <ChefHat className="mr-2 h-4 w-4"/>
+                    Kitchens
+                </Button>
             </div>
           </div>
 
@@ -108,6 +142,7 @@ export default function DiscoverPage() {
                     value={minPrice} 
                     onChange={e => setMinPrice(e.target.value)} 
                     aria-label="Minimum price"
+                    disabled={showKitchens}
                 />
                  <Input 
                     type="number" 
@@ -115,6 +150,7 @@ export default function DiscoverPage() {
                     value={maxPrice} 
                     onChange={e => setMaxPrice(e.target.value)} 
                     aria-label="Maximum price"
+                    disabled={showKitchens}
                 />
               </AccordionContent>
             </AccordionItem>
@@ -123,11 +159,11 @@ export default function DiscoverPage() {
               <AccordionTrigger>Delivery method</AccordionTrigger>
               <AccordionContent className="space-y-2">
                 <div className="flex items-center space-x-2">
-                    <Checkbox id="pickup" checked={deliveryFilter === 'pickup' || deliveryFilter === 'all'} onCheckedChange={() => setDeliveryFilter(deliveryFilter === 'pickup' ? 'all' : 'pickup')}/>
+                    <Checkbox id="pickup" checked={deliveryFilter === 'pickup' || deliveryFilter === 'all'} onCheckedChange={() => setDeliveryFilter(deliveryFilter === 'pickup' ? 'all' : 'pickup')} disabled={showKitchens}/>
                     <Label htmlFor="pickup">Pickup</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <Checkbox id="dropoff" checked={deliveryFilter === 'drop-off' || deliveryFilter === 'all'} onCheckedChange={() => setDeliveryFilter(deliveryFilter === 'drop-off' ? 'all' : 'drop-off')} />
+                    <Checkbox id="dropoff" checked={deliveryFilter === 'drop-off' || deliveryFilter === 'all'} onCheckedChange={() => setDeliveryFilter(deliveryFilter === 'drop-off' ? 'all' : 'drop-off')} disabled={showKitchens} />
                     <Label htmlFor="dropoff">Drop-off</Label>
                 </div>
               </AccordionContent>
@@ -140,7 +176,7 @@ export default function DiscoverPage() {
                 {categories.map(cat => {
                     const Icon = cat.icon;
                     return (
-                        <Button key={cat.id} variant="ghost" className="w-full justify-start">
+                        <Button key={cat.id} variant="ghost" className="w-full justify-start" disabled={showKitchens}>
                             <Icon className="mr-2 h-5 w-5"/>
                             {cat.name}
                         </Button>
@@ -151,14 +187,33 @@ export default function DiscoverPage() {
         </div>
       </aside>
 
-      {/* Dish Grid */}
+      {/* Results */}
       <main className="col-span-1 md:col-span-3">
         <ScrollArea className="h-[calc(100vh-8rem)]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-1">
-            {filteredDishes.map((dish) => (
-                <DishCard key={dish.id} dish={dish} />
-            ))}
-          </div>
+            {showDishes && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-1">
+                    {displayedDishes.map((dish) => (
+                        <DishCard key={dish.id} dish={dish} />
+                    ))}
+                </div>
+            )}
+             {showKitchens && (
+                <div className="space-y-8">
+                  {displayedProviders.length > 0 ? (
+                      displayedProviders.map((provider) => (
+                        <KitchenResultCard 
+                            key={provider.id} 
+                            provider={provider} 
+                            dishes={mockDishes.filter(dish => dish.provider.id === provider.id)}
+                        />
+                    ))
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground">No kitchens found for "{searchTerm}".</p>
+                    </div>
+                  )}
+                </div>
+            )}
         </ScrollArea>
       </main>
     </div>

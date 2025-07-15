@@ -6,6 +6,7 @@ import { DishCard } from "@/components/dish-card";
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
+import { KitchenResultCard } from "@/components/kitchen-result-card";
 
 export default function MapPage() {
   const localProviders = mockUsers.filter(u => u.isProvider);
@@ -35,41 +36,13 @@ export default function MapPage() {
 
       <section className="container py-12">
         <div className="space-y-12">
-          {localProviders.map(provider => {
-            const providerDishes = mockDishes.filter(dish => dish.provider.id === provider.id).slice(0, 3);
-            return (
-              <div key={provider.id}>
-                <div className="flex items-center gap-4 mb-6">
-                  <Avatar className="h-16 w-16 border-2 border-primary">
-                    <AvatarImage src={provider.avatarUrl} alt={provider.name} />
-                    <AvatarFallback>{provider.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h2 className="text-2xl font-bold font-headline">{provider.name}'s Kitchen</h2>
-                    {provider.distance && (
-                      <div className="flex items-center text-muted-foreground">
-                        <MapPin className="h-4 w-4 mr-1.5" />
-                        <span>{provider.distance}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {providerDishes.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {providerDishes.map(dish => (
-                      <DishCard key={dish.id} dish={dish} />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground italic">
-                    {provider.name} doesn't have any dishes listed at the moment.
-                  </p>
-                )}
-                
-              </div>
-            );
-          })}
+          {localProviders.map(provider => (
+             <KitchenResultCard 
+                key={provider.id} 
+                provider={provider} 
+                dishes={mockDishes.filter(dish => dish.provider.id === provider.id)}
+            />
+          ))}
         </div>
       </section>
     </div>
