@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useState } from "react"
 import {
   Avatar,
   AvatarFallback,
@@ -20,14 +21,22 @@ import { Icons } from "@/components/icons"
 import { Search } from "lucide-react"
 
 export function Header() {
-  // Mock logged-in state. We'll toggle between a cook and a consumer.
-  const isLoggedIn = true; 
+  // Mock logged-in state with component state
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   // Set to true for a cook, false for a consumer to see the difference.
-  const isCook = true; 
+  const [isCook, setIsCook] = useState(true); 
 
   const consumerUser = { name: "Alice Johnson", email: "alice.j@example.com", avatarUrl: "https://placehold.co/100x100.png" };
   const cookUser = { name: "Nonna Isabella", email: "nonna.isabella@example.com", avatarUrl: "https://placehold.co/100x100.png" };
   const user = isCook ? cookUser : consumerUser;
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  };
+  
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -97,25 +106,25 @@ export function Header() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link href={isCook ? "/profile/cook" : "/profile/me"} className="w-full">
                       {isCook ? "My Kitchen" : "My Profile"}
                     </Link>
                   </DropdownMenuItem>
                   {!isCook && (
-                    <DropdownMenuItem>
+                    <DropdownMenuItem asChild>
                       <Link href="/orders" className="w-full">My Orders</Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                     Log out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <div className="flex items-center gap-2">
-                 <Button variant="ghost" asChild><Link href="/login">Log In</Link></Button>
+                 <Button variant="ghost" asChild><Link href="/login" onClick={handleLogin}>Log In</Link></Button>
                  <Button asChild><Link href="/signup">Sign Up</Link></Button>
               </div>
             )}
