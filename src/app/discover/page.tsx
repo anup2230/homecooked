@@ -27,7 +27,7 @@ export default function DiscoverPage() {
   const [address, setAddress] = useState("San Francisco, California");
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [searchTerm, setSearchTerm] = useState('food');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const filteredDishes = mockDishes.filter(dish => {
     if (deliveryFilter !== 'all' && !dish.deliveryOptions?.includes(deliveryFilter)) {
@@ -39,8 +39,13 @@ export default function DiscoverPage() {
     if (maxPrice && dish.price > parseFloat(maxPrice)) {
         return false;
     }
-    if (searchTerm && !dish.name.toLowerCase().includes(searchTerm.toLowerCase()) && searchTerm !== 'food') {
-      return false;
+    if (searchTerm) {
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        const inName = dish.name.toLowerCase().includes(lowerCaseSearchTerm);
+        const inKitchen = dish.provider.name.toLowerCase().includes(lowerCaseSearchTerm);
+        if (!inName && !inKitchen) {
+            return false;
+        }
     }
     return true;
   });
@@ -59,7 +64,7 @@ export default function DiscoverPage() {
             <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
-                    placeholder="food" 
+                    placeholder="Search by dish or kitchen..." 
                     className="pl-9"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
