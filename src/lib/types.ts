@@ -21,6 +21,7 @@ export type Dish = {
   dietary?: ('vegetarian' | 'vegan' | 'gluten-free')[];
   deliveryOptions?: DeliveryOption[];
   'data-ai-hint'?: string;
+  location?: [number, number];
 };
 
 export type Review = {

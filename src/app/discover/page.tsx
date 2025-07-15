@@ -2,14 +2,21 @@
 "use client";
 
 import { useState } from 'react';
-import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { DishCard } from "@/components/dish-card";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { mockDishes } from "@/lib/data";
-import type { DeliveryOption } from '@/lib/types';
-import { MapPin, LayoutGrid, Map } from 'lucide-react';
+import type { DeliveryOption, Dish } from '@/lib/types';
+import { MapPin, LayoutGrid, Map as MapIcon, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Dynamically import the map component to avoid SSR issues with Leaflet
+const Map = dynamic(() => import('@/components/map'), { 
+  ssr: false,
+  loading: () => <Skeleton className="h-full w-full" />,
+});
 
 export default function DiscoverPage() {
   const [deliveryFilter, setDeliveryFilter] = useState<DeliveryOption | 'all'>('all');
@@ -60,7 +67,7 @@ export default function DiscoverPage() {
             onClick={() => setViewMode('map')}
              className="h-9 px-4"
           >
-            <Map className="mr-2 h-4 w-4" />
+            <MapIcon className="mr-2 h-4 w-4" />
             Map
           </Button>
         </div>
@@ -100,13 +107,7 @@ export default function DiscoverPage() {
       ) : (
         <div className="flex-grow grid md:grid-cols-2 gap-4 overflow-hidden">
           <div className="relative h-full w-full bg-muted rounded-lg overflow-hidden border">
-             <Image
-              src="https://placehold.co/1200x1200.png"
-              alt="Map of listings"
-              fill
-              className="object-cover"
-              data-ai-hint="city map"
-            />
+             <Map dishes={filteredDishes} />
           </div>
           <ScrollArea className="h-full">
             <div className="space-y-4 pr-4 pb-10">
