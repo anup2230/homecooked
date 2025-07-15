@@ -1,15 +1,37 @@
+"use client";
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/auth-context';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { DishCard } from "@/components/dish-card";
 import { mockDishes, mockTestimonials } from "@/lib/data";
-import { ArrowRight, Star, MapPin } from "lucide-react";
+import { ArrowRight, Star, MapPin, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 export default function HomePage() {
-  const featuredDishes = mockDishes.slice(0, 8); // Using more dishes for the carousel
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      router.replace('/discover');
+    }
+  }, [isLoggedIn, router]);
+
+  if (isLoggedIn) {
+    return (
+      <div className="container flex h-[calc(100vh-3.5rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  const featuredDishes = mockDishes.slice(0, 8);
 
   return (
     <div>
