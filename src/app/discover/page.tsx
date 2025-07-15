@@ -4,19 +4,25 @@
 import { useState } from 'react';
 import { DishCard } from "@/components/dish-card";
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { mockDishes } from "@/lib/data";
 import type { DeliveryOption } from '@/lib/types';
-import { MapPin } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { LocationAutocomplete } from '@/components/location-autocomplete';
 
 export default function DiscoverPage() {
   const [deliveryFilter, setDeliveryFilter] = useState<DeliveryOption | 'all'>('all');
+  const [address, setAddress] = useState("");
 
   const filteredDishes = mockDishes.filter(dish => {
     if (deliveryFilter === 'all') return true;
     return dish.deliveryOptions?.includes(deliveryFilter);
   });
+
+  const handleLocationSelect = (address: string) => {
+    setAddress(address);
+    console.log("Selected Address: ", address);
+    // You can now use this address to filter dishes or pan a map.
+  };
 
   return (
     <div className="container py-10 flex flex-col h-[calc(100vh-3.5rem)]">
@@ -30,17 +36,11 @@ export default function DiscoverPage() {
       </div>
       
       <div className="max-w-xl mx-auto mb-4 w-full shrink-0">
-        <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Enter your address, neighborhood, or zip code"
-            className="pl-10 h-12 text-base"
-          />
-          <Button type="submit" className="absolute right-1 top-1/2 -translate-y-1/2 h-10">
-            Find Food
-          </Button>
-        </div>
+        <LocationAutocomplete 
+          value={address} 
+          onChange={setAddress} 
+          onSelect={handleLocationSelect} 
+        />
       </div>
 
       <div className="flex justify-center items-center gap-4 mb-8 shrink-0">
