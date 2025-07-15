@@ -6,10 +6,10 @@ import { mockDishes, mockTestimonials } from "@/lib/data";
 import { ArrowRight, Star, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 export default function HomePage() {
-  const featuredDishes = mockDishes.slice(0, 4);
-  const trendingDishes = mockDishes.slice(4, 8); // Using different dishes for "trending"
+  const featuredDishes = mockDishes.slice(0, 8); // Using more dishes for the carousel
 
   return (
     <div>
@@ -45,11 +45,25 @@ export default function HomePage() {
                 </Link>
             </Button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredDishes.map((dish) => (
-              <DishCard key={dish.id} dish={dish} />
-            ))}
-          </div>
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full"
+          >
+            <CarouselContent>
+              {featuredDishes.map((dish) => (
+                <CarouselItem key={dish.id} className="sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                  <div className="p-1">
+                    <DishCard dish={dish} />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden md:flex" />
+            <CarouselNext className="hidden md:flex" />
+          </Carousel>
         </div>
       </section>
       
@@ -76,25 +90,6 @@ export default function HomePage() {
                     />
                 </div>
             </div>
-        </div>
-      </section>
-
-      <section className="bg-secondary/20 py-16 md:py-24">
-        <div className="container">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold font-headline">Trending Local Dishes</h2>
-             <Button variant="ghost" asChild>
-                <Link href="/discover">
-                    Explore More
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {trendingDishes.map((dish) => (
-              <DishCard key={dish.id} dish={dish} />
-            ))}
-          </div>
         </div>
       </section>
 
