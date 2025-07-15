@@ -38,12 +38,12 @@ export default function HomePage() {
       <section className="relative bg-secondary/50 py-20 md:py-32">
         <div className="container text-center">
            <h1 className="text-4xl md:text-6xl font-bold font-headline text-primary tracking-tight">
-            Authentic Homemade Meals,
+            Discover Authentic Homemade Meals
             <br />
-            Delivered to Your Door.
+            in Your Neighborhood.
           </h1>
           <p className="mt-6 max-w-3xl mx-auto text-lg md:text-xl text-foreground/80">
-            Explore a world of flavors from talented independent cooks and third-party kitchens in your community.
+            Explore a world of flavors from talented independent cooks in your community.
           </p>
           <div className="mt-8 flex justify-center gap-4">
             <Button asChild size="lg">
