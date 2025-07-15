@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 
 // Mock user data, you can replace this with your actual user data structure
 const consumerUser = { name: "Alice Johnson", email: "alice.j@example.com", avatarUrl: "https://placehold.co/100x100.png" };
@@ -19,11 +20,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [isCook, setIsCook] = useState(true);
+  const router = useRouter();
 
   const user = isCook ? cookUser : consumerUser;
 
   const login = () => setIsLoggedIn(true);
-  const logout = () => setIsLoggedIn(false);
+  const logout = () => {
+    setIsLoggedIn(false);
+    router.push('/');
+  };
 
   const value = { isLoggedIn, isCook, user, login, logout };
 
