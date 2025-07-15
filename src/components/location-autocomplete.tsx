@@ -37,8 +37,9 @@ export function LocationAutocomplete({ value, onChange, onSelect }: LocationAuto
         <div className="relative">
              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
              <Input 
-                value="Enter your city to show local results" 
-                className="pl-10 text-base"
+                value="Enter city (API key needed)" 
+                className="pl-10 text-base bg-muted"
+                disabled
             />
         </div>
     );
@@ -55,8 +56,7 @@ export function LocationAutocomplete({ value, onChange, onSelect }: LocationAuto
         onChange={onChange}
         onSelect={handleSelect}
         searchOptions={{
-            types: ['(cities)'],
-            componentRestrictions: { country: 'us' } 
+            types: ['(cities)', '(regions)'], // Allow for zip codes and cities
         }}
       >
         {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
@@ -64,8 +64,8 @@ export function LocationAutocomplete({ value, onChange, onSelect }: LocationAuto
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               {...getInputProps({
-                placeholder: 'Enter your city to show local results',
-                className: 'pl-10 text-base bg-blue-50 border-blue-200 text-blue-700 placeholder:text-blue-700',
+                placeholder: 'Enter your city or zip code',
+                className: 'pl-10 text-base',
               })}
             />
             {suggestions.length > 0 && (
