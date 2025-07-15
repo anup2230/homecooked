@@ -275,24 +275,24 @@ export const mockSales: Sale[] = [
 export const mockTestimonials: Testimonial[] = [
   {
     id: 'testimonial-1',
-    name: 'Jessica P.',
-    location: 'Brooklyn, NY',
+    name: 'Priya S.',
+    location: 'Austin, TX',
     avatarUrl: 'https://placehold.co/100x100.png',
-    comment: 'Homecooked is a game-changer! I ordered Nonna Isabella\'s meatballs and it was like a hug in a bowl. So easy to order and support local cooks.'
+    comment: 'I moved from India six months ago and was desperately missing my mom\'s cooking. Finding authentic, homemade dal makhani on here was a miracle! It tasted just like home.'
   },
   {
     id: 'testimonial-2',
-    name: 'Tom L.',
-    location: 'Queens, NY',
+    name: 'Mateo R.',
+    location: 'Chicago, IL',
     avatarUrl: 'https://placehold.co/100x100.png',
-    comment: 'I love the variety. The Mapo Tofu was incredible and had that authentic kick I\'ve been looking for. Way better than takeout.'
+    comment: 'I never thought I\'d find real Spanish paella in the Midwest. Maria\'s kitchen is a gem. It’s amazing to connect with my culture through food, even when I\'m miles away from Spain.'
   },
   {
     id: 'testimonial-3',
-    name: 'Maria G.',
-    location: 'Manhattan, NY',
+    name: 'Aisha B.',
+    location: 'Seattle, WA',
     avatarUrl: 'https://placehold.co/100x100.png',
-    comment: 'As a busy professional, I barely have time to cook. Homecooked lets me enjoy a real, comforting meal without the hassle. The Pot Pie was amazing!'
+    comment: 'As a student from Nigeria, finding jollof rice that tastes right is tough. Homecooked connected me with a local cook who makes it perfectly. It\'s more than just a meal; it\'s a connection to my roots.'
   },
 ];
 
