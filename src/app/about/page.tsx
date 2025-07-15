@@ -15,28 +15,16 @@ export default function AboutPage() {
       </section>
 
       <section className="container py-16 md:py-24">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="relative w-full aspect-square rounded-lg overflow-hidden shadow-lg">
-            <Image
-              src="https://placehold.co/600x600.png"
-              alt="Happy people sharing a meal"
-              fill
-              className="object-cover"
-              data-ai-hint="people eating"
-            />
-          </div>
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold font-headline">Our Mission</h2>
-            <p className="text-muted-foreground text-lg">
-              Homecooked was born from a simple idea: there's a world full of passionate home cooks and neighbors craving authentic, soulful meals. Our mission is to be the bridge that connects them.
-            </p>
-            <p className="text-muted-foreground text-lg">
-              We provide a platform for independent home chefs to turn their kitchens into a business and share their culinary talents. We believe that every dish has a story, and the best ones are shared. By empowering local cooks, we're building a community that celebrates diversity, tradition, and the simple joy of a delicious meal made with love.
-            </p>
-            <p className="text-muted-foreground text-lg">
-              Whether you're an independent cook looking to share your passion or a neighbor looking for a taste of home, Homecooked is your place at the table.
-            </p>
-          </div>
+        <div className="max-w-4xl mx-auto space-y-6">
+          <p className="text-muted-foreground text-lg text-center">
+            Homecooked was born from a simple idea: there's a world full of passionate home cooks and neighbors craving authentic, soulful meals. Our mission is to be the bridge that connects them.
+          </p>
+          <p className="text-muted-foreground text-lg text-center">
+            We provide a platform for independent home chefs to turn their kitchens into a business and share their culinary talents. We believe that every dish has a story, and the best ones are shared. By empowering local cooks, we're building a community that celebrates diversity, tradition, and the simple joy of a delicious meal made with love.
+          </p>
+          <p className="text-muted-foreground text-lg text-center">
+            Whether you're an independent cook looking to share your passion or a neighbor looking for a taste of home, Homecooked is your place at the table.
+          </p>
         </div>
       </section>
     </div>
