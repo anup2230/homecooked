@@ -56,9 +56,12 @@ export default function DiscoverPage() {
   const allProviders = mockUsers.filter(u => u.isProvider);
 
   const filteredProviders = allProviders.filter(provider => {
-    if (!searchTerm) return false; // Only show providers if there is a search term
-    return provider.name.toLowerCase().includes(lowerCaseSearchTerm);
+    if (searchTerm) {
+      return provider.name.toLowerCase().includes(lowerCaseSearchTerm);
+    }
+    return true; // Show all providers if no search term
   });
+
 
   const handleLocationSelect = (address: string) => {
     setAddress(address);
@@ -209,7 +212,7 @@ export default function DiscoverPage() {
                     ))
                   ) : (
                     <div className="text-center py-12">
-                      <p className="text-muted-foreground">No kitchens found for "{searchTerm}".</p>
+                      <p className="text-muted-foreground">No kitchens found for "{searchTerm}". Try a different search.</p>
                     </div>
                   )}
                 </div>
