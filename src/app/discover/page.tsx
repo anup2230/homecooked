@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { DishCard } from "@/components/dish-card";
 import { Button } from '@/components/ui/button';
 import { mockDishes, mockUsers } from "@/lib/data";
-import type { DeliveryOption } from '@/lib/types';
+import type { DeliveryOption, ServiceType } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { LocationAutocomplete } from '@/components/location-autocomplete';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Soup, Pizza, Vegan, Star, ChefHat, Utensils } from 'lucide-react';
+import { Search, Soup, Pizza, Vegan, Star, ChefHat, Utensils, PartyPopper, Box } from 'lucide-react';
 import { KitchenResultCard } from '@/components/kitchen-result-card';
 
 const categories = [
@@ -30,8 +30,17 @@ export default function DiscoverPage() {
   const [maxPrice, setMaxPrice] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchMode, setSearchMode] = useState<'dishes' | 'kitchens'>('dishes');
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>(['prepped', 'catering']);
 
   const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+  const handleServiceTypeChange = (serviceType: ServiceType) => {
+    setServiceTypes(prev => 
+      prev.includes(serviceType) 
+        ? prev.filter(st => st !== serviceType) 
+        : [...prev, serviceType]
+    );
+  };
 
   const filteredDishes = mockDishes.filter(dish => {
     if (deliveryFilter !== 'all' && !dish.deliveryOptions?.includes(deliveryFilter)) {
@@ -41,6 +50,9 @@ export default function DiscoverPage() {
         return false;
     }
     if (maxPrice && dish.price > parseFloat(maxPrice)) {
+        return false;
+    }
+    if (serviceTypes.length > 0 && !serviceTypes.includes(dish.serviceType!)) {
         return false;
     }
     if (searchTerm) {
@@ -118,7 +130,7 @@ export default function DiscoverPage() {
             />
           </div>
 
-          <Accordion type="multiple" defaultValue={['sort', 'price', 'delivery']} className="w-full">
+          <Accordion type="multiple" defaultValue={['sort', 'price', 'delivery', 'service']} className="w-full">
             <AccordionItem value="sort">
               <AccordionTrigger>Sort by</AccordionTrigger>
               <AccordionContent>
@@ -155,6 +167,24 @@ export default function DiscoverPage() {
                     aria-label="Maximum price"
                     disabled={showKitchens}
                 />
+              </AccordionContent>
+            </AccordionItem>
+            
+            <AccordionItem value="service">
+              <AccordionTrigger>Service Type</AccordionTrigger>
+              <AccordionContent className="space-y-2">
+                <div className="flex items-center space-x-2">
+                    <Checkbox id="prepped" checked={serviceTypes.includes('prepped')} onCheckedChange={() => handleServiceTypeChange('prepped')} disabled={showKitchens}/>
+                    <Label htmlFor="prepped" className="flex items-center gap-2 font-normal">
+                      <Box className="h-4 w-4" /> Prepped Meals
+                    </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <Checkbox id="catering" checked={serviceTypes.includes('catering')} onCheckedChange={() => handleServiceTypeChange('catering')} disabled={showKitchens} />
+                    <Label htmlFor="catering" className="flex items-center gap-2 font-normal">
+                      <PartyPopper className="h-4 w-4" /> Event Catering
+                    </Label>
+                </div>
               </AccordionContent>
             </AccordionItem>
 

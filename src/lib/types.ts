@@ -9,6 +9,7 @@ export type User = {
 };
 
 export type DeliveryOption = 'pickup' | 'drop-off';
+export type ServiceType = 'prepped' | 'catering';
 
 export type Dish = {
   id: string;
@@ -22,6 +23,7 @@ export type Dish = {
   category: string;
   dietary?: ('vegetarian' | 'vegan' | 'gluten-free')[];
   deliveryOptions?: DeliveryOption[];
+  serviceType?: ServiceType;
   'data-ai-hint'?: string;
   location?: [number, number];
 };
