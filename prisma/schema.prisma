@@ -1,0 +1,204 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth (NextAuth.js required tables) ───────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Core Models ──────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  phone         String?
+  role          Role      @default(BUYER)
+  location      String?
+  lat           Float?
+  lng           Float?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  cookProfile   CookProfile?
+  dishesCreated Dish[]       @relation("CookDishes")
+  ordersPlaced  Order[]      @relation("BuyerOrders")
+  ordersReceived Order[]     @relation("CookOrders")
+  messagesSent  Message[]    @relation("SentMessages")
+  reviewsGiven  Review[]     @relation("ReviewerReviews")
+  reviewsReceived Review[]   @relation("CookReviews")
+}
+
+enum Role {
+  BUYER
+  COOK
+  ADMIN
+}
+
+model CookProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  kitchenName   String
+  description   String?
+  isVerified    Boolean  @default(false)
+  permitNumber  String?
+  cuisineTags   String[]
+  avgRating     Float?
+  totalOrders   Int      @default(0)
+  acceptsOrders Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Dish {
+  id                String         @id @default(cuid())
+  cookId            String
+  title             String
+  description       String?
+  price             Float
+  imageUrl          String?
+  category          String?
+  cuisineTag        String?
+  ingredients       String[]
+  allergens         String[]
+  dietary           DietaryOption[]
+  serviceType       ServiceType    @default(PREPPED)
+  deliveryOptions   DeliveryOption[]
+  isAvailable       Boolean        @default(true)
+  advanceNoticeHrs  Int            @default(24)
+  maxOrdersPerDay   Int?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  cook    User      @relation("CookDishes", fields: [cookId], references: [id], onDelete: Cascade)
+  orders  Order[]
+  reviews Review[]
+}
+
+enum ServiceType {
+  PREPPED
+  CATERING
+}
+
+enum DeliveryOption {
+  PICKUP
+  DROP_OFF
+}
+
+enum DietaryOption {
+  VEGETARIAN
+  VEGAN
+  GLUTEN_FREE
+  HALAL
+  KOSHER
+  NUT_FREE
+  DAIRY_FREE
+}
+
+model Order {
+  id                   String      @id @default(cuid())
+  buyerId              String
+  cookId               String
+  dishId               String
+  quantity             Int         @default(1)
+  totalPrice           Float
+  status               OrderStatus @default(PENDING)
+  pickupTime           DateTime?
+  stripePaymentIntentId String?
+  notes                String?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  buyer    User      @relation("BuyerOrders", fields: [buyerId], references: [id])
+  cook     User      @relation("CookOrders", fields: [cookId], references: [id])
+  dish     Dish      @relation(fields: [dishId], references: [id])
+  messages Message[]
+  review   Review?
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  orderId     String?
+  senderId    String
+  recipientId String
+  body        String
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  order     Order?   @relation(fields: [orderId], references: [id])
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  orderId     String   @unique
+  reviewerId  String
+  cookId      String
+  dishId      String
+  rating      Int
+  comment     String?
+  createdAt   DateTime @default(now())
+
+  order    Order @relation(fields: [orderId], references: [id])
+  reviewer User  @relation("ReviewerReviews", fields: [reviewerId], references: [id])
+  cook     User  @relation("CookReviews", fields: [cookId], references: [id])
+  dish     Dish  @relation(fields: [dishId], references: [id])
+}

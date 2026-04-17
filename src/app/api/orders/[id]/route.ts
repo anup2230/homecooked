@@ -1,0 +1,103 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { z } from 'zod';
+
+const updateOrderSchema = z.object({
+  status: z.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED']),
+});
+
+// GET /api/orders/[id]
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const order = await db.order.findUnique({
+      where: { id: params.id },
+      include: {
+        dish: true,
+        buyer: { select: { id: true, name: true, image: true, email: true } },
+        cook: { select: { id: true, name: true, image: true } },
+        messages: {
+          include: { sender: { select: { id: true, name: true, image: true } } },
+          orderBy: { createdAt: 'asc' },
+        },
+        review: true,
+      },
+    });
+
+    if (!order) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    // Only buyer or cook on the order can view it
+    if (order.buyerId !== session.user.id && order.cookId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    return NextResponse.json({ order });
+  } catch (err) {
+    console.error('[order GET]', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// PUT /api/orders/[id] — update order status (cook confirms/updates, buyer cancels)
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const order = await db.order.findUnique({ where: { id: params.id } });
+    if (!order) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    const body = await req.json();
+    const parsed = updateOrderSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
+    }
+
+    const { status } = parsed.data;
+    const userId = session.user.id;
+
+    // Permission rules:
+    // - Cook can: CONFIRM, PREPARING, READY, COMPLETED
+    // - Buyer can: CANCELLED (only if PENDING)
+    const isCook = order.cookId === userId;
+    const isBuyer = order.buyerId === userId;
+
+    if (!isCook && !isBuyer) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    if (isBuyer && status !== 'CANCELLED') {
+      return NextResponse.json({ error: 'Buyers can only cancel orders' }, { status: 403 });
+    }
+
+    if (isBuyer && status === 'CANCELLED' && order.status !== 'PENDING') {
+      return NextResponse.json(
+        { error: 'Can only cancel pending orders' },
+        { status: 409 }
+      );
+    }
+
+    const updated = await db.order.update({
+      where: { id: params.id },
+      data: { status },
+    });
+
+    return NextResponse.json({ order: updated });
+  } catch (err) {
+    console.error('[order PUT]', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

@@ -1,39 +1,60 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
-// Mock user data, you can replace this with your actual user data structure
-const consumerUser = { name: "Alice Johnson", email: "alice.j@example.com", avatarUrl: "https://placehold.co/100x100.png" };
-const cookUser = { name: "Nonna Isabella", email: "nonna.isabella@example.com", avatarUrl: "https://placehold.co/100x100.png" };
+interface AuthUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: 'BUYER' | 'COOK' | 'ADMIN';
+}
 
 interface AuthContextType {
   isLoggedIn: boolean;
+  isLoading: boolean;
   isCook: boolean;
-  user: { name: string; email: string; avatarUrl: string };
-  login: () => void;
+  isAdmin: boolean;
+  user: AuthUser | null;
+  login: (email: string, password: string) => Promise<{ error?: string }>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [isCook, setIsCook] = useState(true);
+  const { data: session, status } = useSession();
   const router = useRouter();
 
-  const user = isCook ? cookUser : consumerUser;
+  const isLoading = status === 'loading';
+  const isLoggedIn = status === 'authenticated' && !!session?.user;
+  const user = session?.user as AuthUser | null ?? null;
+  const isCook = user?.role === 'COOK';
+  const isAdmin = user?.role === 'ADMIN';
 
-  const login = () => setIsLoggedIn(true);
-  const logout = () => {
-    setIsLoggedIn(false);
-    router.push('/');
+  const login = async (email: string, password: string): Promise<{ error?: string }> => {
+    const result = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    });
+
+    if (result?.error) {
+      return { error: 'Invalid email or password' };
+    }
+
+    router.push('/discover');
+    return {};
   };
 
-  const value = { isLoggedIn, isCook, user, login, logout };
+  const logout = () => {
+    signOut({ callbackUrl: '/' });
+  };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ isLoggedIn, isLoading, isCook, isAdmin, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
