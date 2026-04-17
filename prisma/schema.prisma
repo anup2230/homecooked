@@ -65,15 +65,16 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  accounts      Account[]
-  sessions      Session[]
-  cookProfile   CookProfile?
-  dishesCreated Dish[]       @relation("CookDishes")
-  ordersPlaced  Order[]      @relation("BuyerOrders")
-  ordersReceived Order[]     @relation("CookOrders")
-  messagesSent  Message[]    @relation("SentMessages")
-  reviewsGiven  Review[]     @relation("ReviewerReviews")
-  reviewsReceived Review[]   @relation("CookReviews")
+  accounts            Account[]
+  sessions            Session[]
+  cookProfile         CookProfile?
+  dishesCreated       Dish[]              @relation("CookDishes")
+  ordersPlaced        Order[]             @relation("BuyerOrders")
+  ordersReceived      Order[]             @relation("CookOrders")
+  messagesSent        Message[]           @relation("SentMessages")
+  reviewsGiven        Review[]            @relation("ReviewerReviews")
+  reviewsReceived     Review[]            @relation("CookReviews")
+  kitchenApplications KitchenApplication[]
 }
 
 enum Role {
@@ -185,6 +186,28 @@ model Message {
 
   order     Order?   @relation(fields: [orderId], references: [id])
   sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+}
+
+model KitchenApplication {
+  id             String            @id @default(cuid())
+  userId         String            @unique
+  kitchenName    String
+  description    String?
+  cuisineTags    String[]
+  permitNumber   String?
+  permitImageUrl String?
+  status         ApplicationStatus @default(PENDING)
+  adminNotes     String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model Review {

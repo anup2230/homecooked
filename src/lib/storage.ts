@@ -17,10 +17,15 @@ import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'crypto';
 
+// Singleton client — reuse across requests instead of creating a new one each time
+let _client: S3Client | null = null;
+
 function getClient(): S3Client {
+  if (_client) return _client;
+
   if (process.env.R2_ACCOUNT_ID) {
     // Cloudflare R2
-    return new S3Client({
+    _client = new S3Client({
       region: 'auto',
       endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
       credentials: {
@@ -28,16 +33,18 @@ function getClient(): S3Client {
         secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
       },
     });
+  } else {
+    // AWS S3
+    _client = new S3Client({
+      region: process.env.AWS_REGION ?? 'us-west-2',
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      },
+    });
   }
 
-  // AWS S3
-  return new S3Client({
-    region: process.env.AWS_REGION ?? 'us-west-2',
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
-  });
+  return _client;
 }
 
 function getBucket(): string {

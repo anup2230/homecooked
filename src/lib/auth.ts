@@ -1,4 +1,4 @@
-import { AuthOptions, getServerSession } from 'next-auth';
+import { AuthOptions, DefaultSession, getServerSession } from 'next-auth';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
@@ -18,18 +18,28 @@ export const authOptions: AuthOptions = {
     signIn: '/login',
     error: '/login',
   },
+  cookies: {
+    sessionToken: {
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
+        token.role = (user as { role?: string }).role;
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
-        session.user.id = token.id as string;
-        (session.user as any).role = token.role;
+        (session.user as DefaultSession['user'] & { id: string; role?: string }).id = token.id as string;
+        (session.user as DefaultSession['user'] & { id: string; role?: string }).role = token.role as string | undefined;
       }
       return session;
     },

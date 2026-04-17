@@ -3,8 +3,7 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
 import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/context/auth-context';
-import { SessionProvider } from 'next-auth/react';
+import { Providers } from '@/components/providers';
 
 export const metadata: Metadata = {
   title: 'Homecooked',
@@ -27,15 +26,13 @@ export default function RootLayout({
         />
       </head>
       <body className={cn('font-body antialiased h-full bg-background')}>
-        <SessionProvider>
-          <AuthProvider>
-            <div className="relative flex min-h-screen flex-col">
-              <Header />
-              <main className="flex-1">{children}</main>
-            </div>
-            <Toaster />
-          </AuthProvider>
-        </SessionProvider>
+        <Providers>
+          <div className="relative flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1">{children}</main>
+          </div>
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );
