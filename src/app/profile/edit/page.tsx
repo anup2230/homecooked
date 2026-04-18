@@ -41,6 +41,10 @@ const profileSchema = z.object({
   description: z.string().optional(),
   acceptsOrders: z.boolean().optional(),
   instagramHandle: z.string().optional(),
+  pickupNeighborhood: z.string().optional(),
+  pickupAddress: z.string().optional(),
+  dropoffAvailable: z.boolean().optional(),
+  dropoffNotes: z.string().optional(),
 });
 
 type ProfileForm = z.infer<typeof profileSchema>;
@@ -139,6 +143,10 @@ export default function EditProfilePage() {
                   cuisineTags,
                   acceptsOrders: data.acceptsOrders,
                   instagramHandle: data.instagramHandle || null,
+                  pickupNeighborhood: data.pickupNeighborhood || null,
+                  pickupAddress: data.pickupAddress || null,
+                  dropoffAvailable: data.dropoffAvailable ?? false,
+                  dropoffNotes: data.dropoffNotes || null,
                 },
               }
             : {}),
@@ -305,6 +313,50 @@ export default function EditProfilePage() {
                     Link your Instagram so customers can follow your food journey.
                   </p>
                 </div>
+
+                <Separator />
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold">Pickup & Delivery</h3>
+                  <p className="text-xs text-muted-foreground">Customers see your neighborhood publicly. Full address is only shared after an order is confirmed.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>General Area <span className="text-muted-foreground">(shown publicly)</span></Label>
+                  <Input
+                    placeholder="e.g. Mission District, SF"
+                    {...profileForm.register('pickupNeighborhood')}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Full Pickup Address <span className="text-muted-foreground">(only shared after order)</span></Label>
+                  <Input
+                    placeholder="e.g. 123 Valencia St, San Francisco, CA 94110"
+                    {...profileForm.register('pickupAddress')}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      id="dropoffAvailable"
+                      checked={profileForm.watch('dropoffAvailable') ?? false}
+                      onCheckedChange={val => profileForm.setValue('dropoffAvailable', val)}
+                    />
+                    <Label htmlFor="dropoffAvailable">Offer drop-off delivery</Label>
+                  </div>
+                  {profileForm.watch('dropoffAvailable') && (
+                    <div className="space-y-2">
+                      <Label>Drop-off details</Label>
+                      <Input
+                        placeholder="e.g. Within 3 miles of Mission District, $5 fee"
+                        {...profileForm.register('dropoffNotes')}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <Separator />
 
                 <div className="flex items-center gap-3">
                   <Switch

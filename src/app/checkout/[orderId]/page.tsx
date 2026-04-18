@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, ChevronLeft, CheckCircle2, Lock, CreditCard, Info } from 'lucide-react';
+import { Loader2, ChevronLeft, CheckCircle2, Lock, CreditCard, Info, Home, Truck, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -19,7 +19,17 @@ interface OrderDetail {
   status: string;
   notes: string | null;
   dish: { id: string; title: string; imageUrl: string | null; price: number };
-  cook: { id: string; name: string | null };
+  cook: {
+    id: string;
+    name: string | null;
+    cookProfile: {
+      kitchenName: string;
+      pickupNeighborhood: string | null;
+      pickupAddress: string | null;
+      dropoffAvailable: boolean;
+      dropoffNotes: string | null;
+    } | null;
+  };
 }
 
 export default function CheckoutPage({ params }: { params: Promise<{ orderId: string }> }) {
@@ -117,8 +127,20 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
         <h1 className="text-2xl font-bold">Order Confirmed!</h1>
         <p className="text-muted-foreground">
           Your order for <span className="font-medium">{order.dish.title}</span> has been sent to{' '}
-          <span className="font-medium">{order.cook.name}</span>. They'll start preparing it soon.
+          <span className="font-medium">{order.cook.cookProfile?.kitchenName ?? order.cook.name}</span>. They'll start preparing it soon.
         </p>
+        {order.cook.cookProfile?.pickupAddress && (
+          <div className="rounded-lg border bg-card p-4 text-sm text-left space-y-1">
+            <p className="font-semibold flex items-center gap-2"><Home className="h-4 w-4 text-primary" /> Pickup Address</p>
+            <p className="text-muted-foreground">{order.cook.cookProfile.pickupAddress}</p>
+          </div>
+        )}
+        {order.cook.cookProfile?.dropoffAvailable && (
+          <div className="rounded-lg border bg-card p-4 text-sm text-left space-y-1">
+            <p className="font-semibold flex items-center gap-2"><Truck className="h-4 w-4 text-primary" /> Drop-off</p>
+            <p className="text-muted-foreground">{order.cook.cookProfile.dropoffNotes ?? 'Drop-off available — message the cook for details.'}</p>
+          </div>
+        )}
         <div className="flex flex-col gap-2 pt-4">
           <Button asChild>
             <Link href="/orders">View My Orders</Link>
@@ -169,6 +191,28 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
             </div>
             <p className="font-semibold shrink-0">${order.totalPrice.toFixed(2)}</p>
           </div>
+
+          {/* Pickup location preview */}
+          {order.cook.cookProfile && (
+            <div className="rounded-lg bg-secondary/50 p-3 text-sm space-y-1.5">
+              {order.cook.cookProfile.pickupNeighborhood && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Home className="h-3.5 w-3.5 shrink-0 text-primary" />
+                  <span>Home pickup · <span className="font-medium text-foreground">{order.cook.cookProfile.pickupNeighborhood}</span></span>
+                </div>
+              )}
+              {order.cook.cookProfile.dropoffAvailable && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Truck className="h-3.5 w-3.5 shrink-0 text-primary" />
+                  <span>{order.cook.cookProfile.dropoffNotes ?? 'Drop-off available'}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
+                <MapPin className="h-3 w-3 shrink-0" />
+                Full address shared after order is confirmed
+              </div>
+            </div>
+          )}
 
           <Separator />
 

@@ -23,7 +23,22 @@ export async function GET(
       include: {
         dish: true,
         buyer: { select: { id: true, name: true, image: true, email: true } },
-        cook: { select: { id: true, name: true, image: true } },
+        cook: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            cookProfile: {
+              select: {
+                kitchenName: true,
+                pickupNeighborhood: true,
+                pickupAddress: true,  // returned below only when order is confirmed+
+                dropoffAvailable: true,
+                dropoffNotes: true,
+              },
+            },
+          },
+        },
         messages: {
           include: { sender: { select: { id: true, name: true, image: true } } },
           orderBy: { createdAt: 'asc' },
@@ -37,6 +52,13 @@ export async function GET(
     // Only buyer or cook on the order can view it
     if (order.buyerId !== session.user.id && order.cookId !== session.user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Redact full pickup address for buyers until order is confirmed
+    const pendingStatuses = ['PENDING'];
+    const isBuyer = order.buyerId === session.user.id;
+    if (isBuyer && pendingStatuses.includes(order.status) && order.cook?.cookProfile) {
+      (order.cook.cookProfile as any).pickupAddress = null;
     }
 
     return NextResponse.json({ order });

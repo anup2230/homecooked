@@ -45,6 +45,9 @@ interface ApiDish {
       cuisineTags: string[];
       description: string | null;
       instagramHandle: string | null;
+      pickupNeighborhood: string | null;
+      dropoffAvailable: boolean;
+      dropoffNotes: string | null;
     } | null;
   };
   _count: { reviews: number };

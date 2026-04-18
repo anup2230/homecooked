@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Star, Instagram, ExternalLink, CheckCircle } from 'lucide-react';
+import { MapPin, Star, Instagram, ExternalLink, CheckCircle, Home, Truck } from 'lucide-react';
 
 interface KitchenDish {
   id: string;
@@ -26,6 +26,9 @@ interface KitchenCook {
     totalOrders?: number;
     cuisineTags?: string[];
     instagramHandle?: string | null;
+    pickupNeighborhood?: string | null;
+    dropoffAvailable?: boolean;
+    dropoffNotes?: string | null;
   } | null;
 }
 
@@ -117,6 +120,22 @@ export function KitchenResultCard({ cook, dishes }: KitchenResultCardProps) {
           {profile?.description && (
             <p className="text-sm text-muted-foreground line-clamp-2">{profile.description}</p>
           )}
+
+          {/* Pickup / delivery info */}
+          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+            {profile?.pickupNeighborhood && (
+              <span className="flex items-center gap-1">
+                <Home className="h-3.5 w-3.5 text-primary" />
+                Home pickup · {profile.pickupNeighborhood}
+              </span>
+            )}
+            {profile?.dropoffAvailable && (
+              <span className="flex items-center gap-1">
+                <Truck className="h-3.5 w-3.5 text-primary" />
+                {profile.dropoffNotes ?? 'Drop-off available'}
+              </span>
+            )}
+          </div>
 
           {profile?.cuisineTags && profile.cuisineTags.length > 0 && (
             <div className="flex gap-1.5 flex-wrap pt-1">

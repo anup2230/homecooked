@@ -18,6 +18,10 @@ const updateUserSchema = z.object({
       cuisineTags: z.array(z.string()).optional(),
       acceptsOrders: z.boolean().optional(),
       instagramHandle: z.string().nullable().optional(),
+      pickupNeighborhood: z.string().nullable().optional(),
+      pickupAddress: z.string().nullable().optional(),
+      dropoffAvailable: z.boolean().optional(),
+      dropoffNotes: z.string().nullable().optional(),
     })
     .optional(),
 });
@@ -47,6 +51,10 @@ export async function GET(
             cuisineTags: true,
             acceptsOrders: true,
             instagramHandle: true,
+            pickupNeighborhood: true,
+            dropoffAvailable: true,
+            dropoffNotes: true,
+            // pickupAddress intentionally omitted — only returned post-order
           },
         },
         dishesCreated: {
