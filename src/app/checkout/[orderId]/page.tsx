@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import { StripeCheckout } from '@/components/stripe-checkout';
@@ -22,7 +22,8 @@ interface OrderDetail {
   cook: { id: string; name: string | null };
 }
 
-export default function CheckoutPage({ params }: { params: { orderId: string } }) {
+export default function CheckoutPage({ params }: { params: Promise<{ orderId: string }> }) {
+  const { orderId } = React.use(params);
   const { isLoggedIn } = useAuth();
   const router = useRouter();
   const [order, setOrder] = useState<OrderDetail | null>(null);
@@ -37,7 +38,7 @@ export default function CheckoutPage({ params }: { params: { orderId: string } }
 
     async function fetchOrder() {
       try {
-        const res = await fetch(`/api/orders/${params.orderId}`);
+        const res = await fetch(`/api/orders/${orderId}`);
         if (res.status === 403 || res.status === 404) {
           router.replace('/orders');
           return;
@@ -57,7 +58,7 @@ export default function CheckoutPage({ params }: { params: { orderId: string } }
       }
     }
     fetchOrder();
-  }, [isLoggedIn, params.orderId, router]);
+  }, [isLoggedIn, orderId, router]);
 
   if (isLoading) {
     return (
