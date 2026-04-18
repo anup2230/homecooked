@@ -1,4 +1,4 @@
-import type { User, Dish, Review, Order, Testimonial, Sale, Conversation, Message } from '@/lib/types';
+import type { User, Dish, Review, Order, Testimonial, Sale, Conversation, Message, MonthlyRevenue, TopDish } from '@/lib/types';
 
 export const mockUsers: User[] = [
   { id: 'user-1', name: 'Maria Garcia', avatarUrl: 'https://placehold.co/100x100.png', isProvider: true, distance: 'Approx. 1.2 miles away', location: 'San Francisco, CA', description: 'Specializing in authentic Spanish tapas and paella, made with love.' },
@@ -316,6 +316,21 @@ export const mockMessages: Message[] = [
     { id: 'msg-3', senderId: 'user-5', text: 'That\'s wonderful to hear! Thank you so much for the quick reply. I\'ll place an order now.', timestamp: '10:33 AM' },
     { id: 'msg-4', senderId: 'user-6', text: 'Hello! I saw your Tiramisu, it looks amazing! Is it possible to order a larger one for a party?', timestamp: 'Yesterday' },
     { id: 'msg-5', senderId: loggedInUserId, text: 'Hi David! Absolutely, I can make a larger format Tiramisu. How many people are you expecting?', timestamp: 'Yesterday' },
+];
+
+export const mockMonthlyRevenue: MonthlyRevenue[] = [
+  { month: 'Nov', revenue: 312, orders: 14 },
+  { month: 'Dec', revenue: 580, orders: 26 },
+  { month: 'Jan', revenue: 420, orders: 19 },
+  { month: 'Feb', revenue: 635, orders: 28 },
+  { month: 'Mar', revenue: 510, orders: 23 },
+  { month: 'Apr', revenue: 748, orders: 34 },
+];
+
+export const mockTopDishes: TopDish[] = [
+  { name: "Nonna's Meatballs", revenue: 418.00, unitsSold: 19 },
+  { name: 'Artisanal Charcuterie Board', revenue: 285.00, unitsSold: 3 },
+  { name: 'Tiramisu Classico', revenue: 171.00, unitsSold: 18 },
 ];
 
 export const mockConversations: Conversation[] = [

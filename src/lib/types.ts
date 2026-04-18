@@ -78,4 +78,16 @@ export type Conversation = {
   id: string;
   participants: User[];
   messages: Message[];
-}
+};
+
+export type MonthlyRevenue = {
+  month: string;
+  revenue: number;
+  orders: number;
+};
+
+export type TopDish = {
+  name: string;
+  revenue: number;
+  unitsSold: number;
+};
