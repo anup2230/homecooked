@@ -122,7 +122,7 @@ export default function DiscoverPage() {
   const cookGroups = Array.from(cookMap.values());
 
   return (
-    <div className="container mx-auto py-6 grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
+    <div className="container py-8 grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
       {/* Sidebar */}
       <aside className="col-span-1 md:sticky md:top-20">
         <div className="space-y-6">
