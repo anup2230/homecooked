@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Star, ChevronLeft, MessageCircle, Loader2, ShoppingCart, AlertCircle } from "lucide-react";
+import { Star, ChevronLeft, MessageCircle, Loader2, ShoppingCart, AlertCircle, Minus, Plus, Clock } from "lucide-react";
 import { useAuth } from '@/context/auth-context';
 import {
   AlertDialog,
@@ -21,6 +21,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from '@/hooks/use-toast';
 
 const StarRating = ({ rating }: { rating: number }) => (
@@ -67,6 +78,7 @@ interface DishDetail {
     createdAt: string;
     reviewer: { id: string; name: string | null; image: string | null };
   }[];
+  advanceNoticeHrs: number;
   _count: { reviews: number; orders: number };
 }
 
@@ -80,6 +92,9 @@ export default function DishDetailPage({ params }: { params: Promise<{ id: strin
   const [isLoading, setIsLoading] = useState(true);
   const [isOrdering, setIsOrdering] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [orderQuantity, setOrderQuantity] = useState(1);
+  const [orderNotes, setOrderNotes] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -110,14 +125,20 @@ export default function DishDetailPage({ params }: { params: Promise<{ id: strin
     }
   };
 
-  const handleOrder = async () => {
+  const handleOrderClick = () => {
+    setOrderQuantity(1);
+    setOrderNotes('');
+    setShowOrderModal(true);
+  };
+
+  const handlePlaceOrder = async () => {
     if (!dish) return;
     setIsOrdering(true);
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dishId: dish.id, quantity: 1 }),
+        body: JSON.stringify({ dishId: dish.id, quantity: orderQuantity, notes: orderNotes || undefined }),
       });
 
       if (!res.ok) {
@@ -126,17 +147,11 @@ export default function DishDetailPage({ params }: { params: Promise<{ id: strin
       }
 
       const { order } = await res.json();
-      toast({
-        title: "Order placed! 🎉",
-        description: `Proceeding to checkout...`,
-      });
+      setShowOrderModal(false);
+      toast({ title: "Order placed! 🎉", description: `Proceeding to checkout...` });
       router.push(`/checkout/${order.id}`);
     } catch (err: any) {
-      toast({
-        title: "Order failed",
-        description: err.message,
-        variant: "destructive",
-      });
+      toast({ title: "Order failed", description: err.message, variant: "destructive" });
     } finally {
       setIsOrdering(false);
     }
@@ -255,14 +270,10 @@ export default function DishDetailPage({ params }: { params: Promise<{ id: strin
               {!isOwnDish && (
                 <Button
                   size="lg"
-                  onClick={() => handleActionClick(handleOrder)}
+                  onClick={() => handleActionClick(handleOrderClick)}
                   disabled={!dish.isAvailable || isOrdering}
                 >
-                  {isOrdering ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                  )}
+                  <ShoppingCart className="mr-2 h-4 w-4" />
                   {dish.isAvailable ? 'Order Now' : 'Unavailable'}
                 </Button>
               )}
@@ -340,6 +351,78 @@ export default function DishDetailPage({ params }: { params: Promise<{ id: strin
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Order Modal */}
+      <Dialog open={showOrderModal} onOpenChange={setShowOrderModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Place Your Order</DialogTitle>
+            <DialogDescription>
+              {dish?.title} · ${dish?.price.toFixed(2)} each
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-5 py-2">
+            {/* Quantity */}
+            <div className="space-y-2">
+              <Label>Quantity</Label>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline" size="icon"
+                  onClick={() => setOrderQuantity(q => Math.max(1, q - 1))}
+                  disabled={orderQuantity <= 1}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <span className="w-8 text-center text-lg font-semibold">{orderQuantity}</span>
+                <Button
+                  variant="outline" size="icon"
+                  onClick={() => setOrderQuantity(q => Math.min(20, q + 1))}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label htmlFor="notes">Special instructions <span className="text-muted-foreground">(optional)</span></Label>
+              <Textarea
+                id="notes"
+                placeholder="e.g. no nuts, extra spicy, allergy info..."
+                value={orderNotes}
+                onChange={e => setOrderNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            {/* Order summary */}
+            <div className="rounded-lg bg-secondary/50 p-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{dish?.title} × {orderQuantity}</span>
+                <span>${((dish?.price ?? 0) * orderQuantity).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-semibold text-base border-t pt-2">
+                <span>Total</span>
+                <span className="text-primary">${((dish?.price ?? 0) * orderQuantity).toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Clock className="h-3.5 w-3.5 shrink-0" />
+              <span>Advance notice: {dish?.advanceNoticeHrs ?? 24}h required. Cook will confirm your order.</span>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowOrderModal(false)} disabled={isOrdering}>
+              Cancel
+            </Button>
+            <Button onClick={handlePlaceOrder} disabled={isOrdering}>
+              {isOrdering ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShoppingCart className="mr-2 h-4 w-4" />}
+              Confirm & Checkout
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -3,14 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
-import { StripeCheckout } from '@/components/stripe-checkout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, ChevronLeft } from 'lucide-react';
+import { Loader2, ChevronLeft, CheckCircle2, Lock, CreditCard, Info } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 interface OrderDetail {
   id: string;
@@ -26,9 +26,17 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
   const { orderId } = React.use(params);
   const { isLoggedIn } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
+
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentDone, setPaymentDone] = useState(false);
+
+  // Detect if Stripe is configured (not placeholder)
+  const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
+  const stripeConfigured = stripeKey.startsWith('pk_') && !stripeKey.includes('...');
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -45,7 +53,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
         }
         if (!res.ok) throw new Error('Failed to fetch order');
         const data = await res.json();
-        // Only PENDING orders can be checked out
         if (data.order.status !== 'PENDING') {
           router.replace('/orders');
           return;
@@ -59,6 +66,27 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
     }
     fetchOrder();
   }, [isLoggedIn, orderId, router]);
+
+  // Dev mode: simulate payment confirmation
+  const handleDevPayment = async () => {
+    if (!order) return;
+    setIsProcessing(true);
+    try {
+      // Mark order as CONFIRMED directly
+      const res = await fetch(`/api/orders/${order.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CONFIRMED' }),
+      });
+      if (!res.ok) throw new Error('Failed to confirm order');
+      setPaymentDone(true);
+      toast({ title: 'Order confirmed! 🎉', description: 'The cook has been notified.' });
+    } catch (err: any) {
+      toast({ title: 'Failed to confirm order', description: err.message, variant: 'destructive' });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -79,6 +107,31 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
     );
   }
 
+  // ── Success state ──────────────────────────────────────────────────────────
+  if (paymentDone) {
+    return (
+      <div className="container py-16 max-w-md mx-auto text-center space-y-4">
+        <div className="flex justify-center">
+          <CheckCircle2 className="h-16 w-16 text-green-500" />
+        </div>
+        <h1 className="text-2xl font-bold">Order Confirmed!</h1>
+        <p className="text-muted-foreground">
+          Your order for <span className="font-medium">{order.dish.title}</span> has been sent to{' '}
+          <span className="font-medium">{order.cook.name}</span>. They'll start preparing it soon.
+        </p>
+        <div className="flex flex-col gap-2 pt-4">
+          <Button asChild>
+            <Link href="/orders">View My Orders</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/discover">Continue Browsing</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Checkout card ──────────────────────────────────────────────────────────
   return (
     <div className="container py-8 max-w-lg mx-auto">
       <Button asChild variant="ghost" className="mb-6">
@@ -91,12 +144,13 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
       <Card>
         <CardHeader>
           <CardTitle>Complete Your Order</CardTitle>
-          <CardDescription>Secure payment powered by Stripe</CardDescription>
+          <CardDescription>Review your order before confirming</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Order Summary */}
+
+          {/* Order summary */}
           <div className="flex items-center gap-4">
-            <div className="relative h-16 w-16 rounded-md overflow-hidden shrink-0">
+            <div className="relative h-16 w-16 rounded-md overflow-hidden shrink-0 border">
               <Image
                 src={order.dish.imageUrl ?? 'https://placehold.co/64x64.png'}
                 alt={order.dish.title}
@@ -104,32 +158,86 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
                 className="object-cover"
               />
             </div>
-            <div className="flex-1">
-              <p className="font-semibold">{order.dish.title}</p>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold truncate">{order.dish.title}</p>
               <p className="text-sm text-muted-foreground">
                 by {order.cook.name} · Qty: {order.quantity}
               </p>
+              {order.notes && (
+                <p className="text-xs text-muted-foreground mt-1 italic">"{order.notes}"</p>
+              )}
             </div>
-            <p className="font-semibold">${order.totalPrice.toFixed(2)}</p>
+            <p className="font-semibold shrink-0">${order.totalPrice.toFixed(2)}</p>
           </div>
 
           <Separator />
 
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Subtotal</span>
+            <div className="flex justify-between text-muted-foreground">
+              <span>Subtotal</span>
               <span>${order.totalPrice.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between font-semibold text-base pt-1">
+            <div className="flex justify-between text-muted-foreground">
+              <span>Platform fee</span>
+              <span>$0.00</span>
+            </div>
+            <div className="flex justify-between font-semibold text-base border-t pt-2">
               <span>Total</span>
-              <span>${order.totalPrice.toFixed(2)}</span>
+              <span className="text-primary">${order.totalPrice.toFixed(2)}</span>
             </div>
           </div>
 
           <Separator />
 
-          {/* Stripe Checkout */}
-          <StripeCheckout orderId={order.id} amount={order.totalPrice} />
+          {/* Payment section */}
+          {stripeConfigured ? (
+            // Real Stripe checkout (when keys are set)
+            <div className="space-y-3">
+              <p className="text-sm font-medium flex items-center gap-2">
+                <Lock className="h-4 w-4" /> Secure payment
+              </p>
+              <Button
+                className="w-full"
+                size="lg"
+                onClick={() => router.push(`/checkout/${orderId}/payment`)}
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                Pay ${order.totalPrice.toFixed(2)} with Stripe
+              </Button>
+            </div>
+          ) : (
+            // Dev mode bypass
+            <div className="space-y-3">
+              <div className="flex items-start gap-2 rounded-lg border border-yellow-400/50 bg-yellow-50 dark:bg-yellow-950/20 p-3 text-sm">
+                <Info className="h-4 w-4 text-yellow-600 shrink-0 mt-0.5" />
+                <div className="text-yellow-800 dark:text-yellow-300">
+                  <p className="font-medium">Dev mode — Stripe not configured</p>
+                  <p className="text-xs mt-0.5 opacity-80">
+                    Add real Stripe keys to <code>.env.local</code> to enable payments.
+                  </p>
+                </div>
+              </div>
+              <Button
+                className="w-full"
+                size="lg"
+                onClick={handleDevPayment}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                )}
+                Confirm Order (Skip Payment)
+              </Button>
+            </div>
+          )}
+
+          <p className="text-xs text-center text-muted-foreground">
+            {stripeConfigured
+              ? 'Secured by Stripe. Your card details are never stored on our servers.'
+              : 'Payment will be collected once Stripe is configured.'}
+          </p>
         </CardContent>
       </Card>
     </div>
