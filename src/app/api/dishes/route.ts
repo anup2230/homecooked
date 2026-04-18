@@ -60,6 +60,8 @@ export async function GET(req: NextRequest) {
             name: true,
             image: true,
             location: true,
+            lat: true,
+            lng: true,
             cookProfile: {
               select: {
                 kitchenName: true,
@@ -72,6 +74,8 @@ export async function GET(req: NextRequest) {
                 pickupNeighborhood: true,
                 dropoffAvailable: true,
                 dropoffNotes: true,
+                pickupLat: true,
+                pickupLng: true,
               },
             },
           },

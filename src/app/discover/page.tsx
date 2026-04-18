@@ -11,9 +11,10 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Soup, Pizza, Vegan, Star, ChefHat, Utensils, PartyPopper, Box, Loader2 } from 'lucide-react';
+import { Search, Soup, Pizza, Vegan, Star, ChefHat, Utensils, PartyPopper, Box, Loader2, Navigation } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { KitchenResultCard } from '@/components/kitchen-result-card';
+import { distanceMiles, formatDistance } from '@/lib/distance';
 
 const categories = [
   { id: 'italian', name: 'Italian', icon: Pizza },
@@ -37,6 +38,8 @@ interface ApiDish {
     name: string | null;
     image: string | null;
     location: string | null;
+    lat: number | null;
+    lng: number | null;
     cookProfile: {
       kitchenName: string;
       avgRating: number | null;
@@ -46,6 +49,8 @@ interface ApiDish {
       description: string | null;
       instagramHandle: string | null;
       pickupNeighborhood: string | null;
+      pickupLat: number | null;
+      pickupLng: number | null;
       dropoffAvailable: boolean;
       dropoffNotes: string | null;
     } | null;
@@ -67,6 +72,31 @@ export default function DiscoverPage() {
   const [dishes, setDishes] = useState<ApiDish[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLng, setUserLng] = useState<number | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+
+  const requestLocation = () => {
+    if (!navigator.geolocation) return;
+    setLocationLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLat(pos.coords.latitude);
+        setUserLng(pos.coords.longitude);
+        setSortBy('nearest');
+        setLocationLoading(false);
+      },
+      () => setLocationLoading(false)
+    );
+  };
+
+  const getDishDistance = (dish: ApiDish): number | null => {
+    if (userLat === null || userLng === null) return null;
+    const lat = dish.cook.cookProfile?.pickupLat ?? dish.cook.lat;
+    const lng = dish.cook.cookProfile?.pickupLng ?? dish.cook.lng;
+    if (lat == null || lng == null) return null;
+    return distanceMiles(userLat, userLng, lat, lng);
+  };
 
   const debouncedSearch = useDebounce(searchTerm, 400);
   const debouncedMin = useDebounce(minPrice, 600);
@@ -127,7 +157,30 @@ export default function DiscoverPage() {
       cookMap.set(dish.cook.id, { cook: dish.cook, dishes: [dish] });
     }
   });
-  const cookGroups = Array.from(cookMap.values());
+  // Sort dishes client-side by distance if user location available
+  const sortedDishes = [...dishes].sort((a, b) => {
+    if (sortBy === 'nearest') {
+      const da = getDishDistance(a);
+      const db = getDishDistance(b);
+      if (da !== null && db !== null) return da - db;
+      if (da !== null) return -1;
+      if (db !== null) return 1;
+    }
+    return 0;
+  });
+
+  const cookGroups = Array.from(cookMap.values()).sort((a, b) => {
+    if (sortBy === 'nearest' && userLat !== null && userLng !== null) {
+      const getGroupDist = (cook: ApiDish['cook']) => {
+        const lat = cook.cookProfile?.pickupLat ?? cook.lat;
+        const lng = cook.cookProfile?.pickupLng ?? cook.lng;
+        if (lat == null || lng == null) return Infinity;
+        return distanceMiles(userLat!, userLng!, lat, lng);
+      };
+      return getGroupDist(a.cook) - getGroupDist(b.cook);
+    }
+    return 0;
+  });
 
   return (
     <div className="container py-8 grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
@@ -186,8 +239,28 @@ export default function DiscoverPage() {
                     <SelectItem value="newest">Newest listed</SelectItem>
                     <SelectItem value="price_asc">Price: low to high</SelectItem>
                     <SelectItem value="price_desc">Price: high to low</SelectItem>
+                    <SelectItem value="nearest">Nearest first</SelectItem>
                   </SelectContent>
                 </Select>
+                {sortBy === 'nearest' && userLat === null && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-2"
+                    onClick={requestLocation}
+                    disabled={locationLoading}
+                  >
+                    {locationLoading
+                      ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                      : <Navigation className="mr-2 h-3.5 w-3.5" />}
+                    Use my location
+                  </Button>
+                )}
+                {userLat !== null && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <Navigation className="h-3 w-3" /> Location active
+                  </p>
+                )}
               </AccordionContent>
             </AccordionItem>
 
@@ -309,8 +382,12 @@ export default function DiscoverPage() {
                     <p className="text-muted-foreground">No dishes found. Try adjusting your filters.</p>
                   </div>
                 ) : (
-                  dishes.map((dish) => (
-                    <DishCard key={dish.id} dish={dish} />
+                  sortedDishes.map((dish) => (
+                    <DishCard
+                      key={dish.id}
+                      dish={dish}
+                      distanceMiles={getDishDistance(dish) ?? undefined}
+                    />
                   ))
                 )}
               </div>
@@ -323,9 +400,16 @@ export default function DiscoverPage() {
                     <p className="text-muted-foreground">No kitchens found. Try a different search.</p>
                   </div>
                 ) : (
-                  cookGroups.map(({ cook, dishes: cookDishes }) => (
-                    <KitchenResultCard key={cook.id} cook={cook} dishes={cookDishes} />
-                  ))
+                  cookGroups.map(({ cook, dishes: cookDishes }) => {
+                    const lat = cook.cookProfile?.pickupLat ?? cook.lat;
+                    const lng = cook.cookProfile?.pickupLng ?? cook.lng;
+                    const dist = (userLat !== null && userLng !== null && lat != null && lng != null)
+                      ? distanceMiles(userLat, userLng, lat, lng)
+                      : undefined;
+                    return (
+                      <KitchenResultCard key={cook.id} cook={cook} dishes={cookDishes} distanceMiles={dist} />
+                    );
+                  })
                 )}
               </div>
             )}

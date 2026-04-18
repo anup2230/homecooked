@@ -1,11 +1,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star } from 'lucide-react';
+import { Star, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { formatDistance } from '@/lib/distance';
 
 // Accepts both the old mock Dish shape and the new API shape
 interface DishCardProps {
+  distanceMiles?: number;
   dish: {
     id: string;
     // API shape uses 'title', mock shape uses 'name'
@@ -39,7 +41,7 @@ interface DishCardProps {
   };
 }
 
-export function DishCard({ dish }: DishCardProps) {
+export function DishCard({ dish, distanceMiles: distMi }: DishCardProps) {
   const displayName = dish.title ?? dish.name ?? 'Untitled';
   const location =
     dish.cook?.location ?? dish.provider?.location ?? dish.provider?.distance ?? '';
@@ -52,6 +54,12 @@ export function DishCard({ dish }: DishCardProps) {
       <Card className="h-full flex flex-col transition-all duration-200 ease-in-out group-hover:shadow-xl border-0 shadow-none hover:shadow-none">
         <CardHeader className="p-0">
           <div className="relative aspect-square w-full overflow-hidden rounded-lg">
+            {distMi !== undefined && (
+              <div className="absolute top-2 left-2 z-10 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                <MapPin className="h-2.5 w-2.5" />
+                {formatDistance(distMi)}
+              </div>
+            )}
             <Image
               src={imageUrl}
               alt={displayName}

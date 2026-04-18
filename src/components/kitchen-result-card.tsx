@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Star, Instagram, ExternalLink, CheckCircle, Home, Truck } from 'lucide-react';
+import { MapPin, Star, Instagram, ExternalLink, CheckCircle, Home, Truck, Navigation } from 'lucide-react';
+import { formatDistance } from '@/lib/distance';
 
 interface KitchenDish {
   id: string;
@@ -35,9 +36,10 @@ interface KitchenCook {
 interface KitchenResultCardProps {
   cook: KitchenCook;
   dishes: KitchenDish[];
+  distanceMiles?: number;
 }
 
-export function KitchenResultCard({ cook, dishes }: KitchenResultCardProps) {
+export function KitchenResultCard({ cook, dishes, distanceMiles: distMi }: KitchenResultCardProps) {
   const profile = cook.cookProfile;
   const kitchenName = profile?.kitchenName ?? cook.name ?? 'Unknown Kitchen';
   const previewDishes = dishes.slice(0, 4);
@@ -106,6 +108,11 @@ export function KitchenResultCard({ cook, dishes }: KitchenResultCardProps) {
             {cook.location && (
               <span className="flex items-center gap-1">
                 <MapPin className="h-3.5 w-3.5" /> {cook.location}
+              </span>
+            )}
+            {distMi !== undefined && (
+              <span className="flex items-center gap-1 font-medium text-primary">
+                <Navigation className="h-3.5 w-3.5" /> {formatDistance(distMi)}
               </span>
             )}
             {profile?.avgRating && (

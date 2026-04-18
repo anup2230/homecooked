@@ -37,7 +37,9 @@ async function main() {
       name: 'Isabella Romano',
       passwordHash: cookHash,
       role: Role.COOK,
-      location: 'San Francisco, CA',
+      location: 'Mission District, SF',
+      lat: 37.7599,
+      lng: -122.4148,
       cookProfile: {
         create: {
           kitchenName: "Nonna Isabella's Kitchen",
@@ -47,6 +49,9 @@ async function main() {
           acceptsOrders: true,
           avgRating: 4.9,
           totalOrders: 142,
+          pickupNeighborhood: 'Mission District, SF',
+          pickupLat: 37.7599,
+          pickupLng: -122.4148,
         },
       },
     },
@@ -61,7 +66,9 @@ async function main() {
       name: 'Jordan Kim',
       passwordHash: cookHash,
       role: Role.COOK,
-      location: 'Oakland, CA',
+      location: 'Temescal, Oakland',
+      lat: 37.8322,
+      lng: -122.2669,
       cookProfile: {
         create: {
           kitchenName: "Jordan's Healthy Kitchen",
@@ -71,6 +78,9 @@ async function main() {
           acceptsOrders: true,
           avgRating: 4.7,
           totalOrders: 89,
+          pickupNeighborhood: 'Temescal, Oakland',
+          pickupLat: 37.8322,
+          pickupLng: -122.2669,
         },
       },
     },
