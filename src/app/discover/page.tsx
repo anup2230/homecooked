@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Soup, Pizza, Vegan, Star, ChefHat, Utensils, PartyPopper, Box, Loader2 } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
+import { KitchenResultCard } from '@/components/kitchen-result-card';
 
 const categories = [
   { id: 'italian', name: 'Italian', icon: Pizza },
@@ -40,6 +41,10 @@ interface ApiDish {
       kitchenName: string;
       avgRating: number | null;
       isVerified: boolean;
+      totalOrders: number;
+      cuisineTags: string[];
+      description: string | null;
+      instagramHandle: string | null;
     } | null;
   };
   _count: { reviews: number };
@@ -309,39 +314,14 @@ export default function DiscoverPage() {
             )}
 
             {searchMode === 'kitchens' && (
-              <div className="space-y-8">
+              <div className="space-y-6 pb-4">
                 {cookGroups.length === 0 ? (
                   <div className="text-center py-12">
                     <p className="text-muted-foreground">No kitchens found. Try a different search.</p>
                   </div>
                 ) : (
                   cookGroups.map(({ cook, dishes: cookDishes }) => (
-                    <div key={cook.id} className="border rounded-lg p-6 space-y-4">
-                      <div className="flex items-center gap-4">
-                        <div className="h-14 w-14 rounded-full bg-secondary flex items-center justify-center text-xl font-bold text-primary">
-                          {cook.name?.charAt(0) ?? '?'}
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-lg">
-                            {cook.cookProfile?.kitchenName ?? cook.name}
-                          </h3>
-                          {cook.location && (
-                            <p className="text-sm text-muted-foreground">{cook.location}</p>
-                          )}
-                          {cook.cookProfile?.avgRating && (
-                            <div className="flex items-center gap-1 text-sm">
-                              <Star className="h-4 w-4 fill-primary text-primary" />
-                              <span>{cook.cookProfile.avgRating.toFixed(1)}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        {cookDishes.slice(0, 6).map(dish => (
-                          <DishCard key={dish.id} dish={dish} />
-                        ))}
-                      </div>
-                    </div>
+                    <KitchenResultCard key={cook.id} cook={cook} dishes={cookDishes} />
                   ))
                 )}
               </div>

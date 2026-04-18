@@ -17,6 +17,7 @@ const updateUserSchema = z.object({
       description: z.string().optional(),
       cuisineTags: z.array(z.string()).optional(),
       acceptsOrders: z.boolean().optional(),
+      instagramHandle: z.string().nullable().optional(),
     })
     .optional(),
 });
@@ -45,6 +46,7 @@ export async function GET(
             totalOrders: true,
             cuisineTags: true,
             acceptsOrders: true,
+            instagramHandle: true,
           },
         },
         dishesCreated: {

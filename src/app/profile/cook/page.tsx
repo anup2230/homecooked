@@ -13,8 +13,9 @@ import Link from "next/link";
 import {
   DollarSign, Edit, PlusCircle, ShoppingCart, Star,
   TrendingUp, TrendingDown, Package, Clock, CheckCircle2,
-  XCircle, Eye, ToggleLeft, BarChart2, Flame
+  XCircle, Eye, ToggleLeft, BarChart2, Flame, Link2, Instagram
 } from "lucide-react";
+import { useToast } from '@/hooks/use-toast';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -44,6 +45,7 @@ const statusIcons: Record<string, React.ReactNode> = {
 };
 
 export default function CookProfilePage() {
+  const { toast } = useToast();
   const currentCook = mockUsers[2]; // Nonna Isabella
   const cookDishes = mockDishes.filter(dish => dish.provider.id === currentCook.id);
   const totalRevenue = mockSales.reduce((acc, sale) => acc + sale.totalPrice, 0);
@@ -90,13 +92,20 @@ export default function CookProfilePage() {
           <p className="text-muted-foreground text-sm mt-1">Cook since May 2024 · {currentCook.location}</p>
           <p className="mt-2 max-w-prose text-sm">{currentCook.description}</p>
         </div>
-        <div className="flex gap-2 shrink-0">
-          <Button variant="outline" asChild>
+        <div className="flex flex-wrap gap-2 shrink-0">
+          <Button variant="outline" size="sm" onClick={() => {
+            const url = `${window.location.origin}/kitchen/${currentCook.id}`;
+            navigator.clipboard.writeText(url);
+            toast({ title: 'Link copied!', description: 'Share it in your Instagram bio.' });
+          }}>
+            <Link2 className="mr-2 h-4 w-4" /> Copy Bio Link
+          </Button>
+          <Button variant="outline" size="sm" asChild>
             <Link href={`/profile/${currentCook.id}`}>
               <Eye className="mr-2 h-4 w-4" /> Public Profile
             </Link>
           </Button>
-          <Button asChild>
+          <Button size="sm" asChild>
             <Link href="/sell/new">
               <PlusCircle className="mr-2 h-4 w-4" /> Add Dish
             </Link>

@@ -40,6 +40,7 @@ const profileSchema = z.object({
   kitchenName: z.string().optional(),
   description: z.string().optional(),
   acceptsOrders: z.boolean().optional(),
+  instagramHandle: z.string().optional(),
 });
 
 type ProfileForm = z.infer<typeof profileSchema>;
@@ -137,6 +138,7 @@ export default function EditProfilePage() {
                   description: data.description,
                   cuisineTags,
                   acceptsOrders: data.acceptsOrders,
+                  instagramHandle: data.instagramHandle || null,
                 },
               }
             : {}),
@@ -287,6 +289,21 @@ export default function EditProfilePage() {
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Instagram Handle</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
+                    <Input
+                      className="pl-7"
+                      placeholder="yourcookinhandle"
+                      {...profileForm.register('instagramHandle')}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Link your Instagram so customers can follow your food journey.
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-3">
