@@ -10,8 +10,9 @@ const updateOrderSchema = z.object({
 // GET /api/orders/[id]
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -19,7 +20,7 @@ export async function GET(
 
   try {
     const order = await db.order.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         dish: true,
         buyer: { select: { id: true, name: true, image: true, email: true } },
@@ -71,15 +72,16 @@ export async function GET(
 // PUT /api/orders/[id] — update order status (cook confirms/updates, buyer cancels)
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const order = await db.order.findUnique({ where: { id: params.id } });
+    const order = await db.order.findUnique({ where: { id } });
     if (!order) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     const body = await req.json();
@@ -113,7 +115,7 @@ export async function PUT(
     }
 
     const updated = await db.order.update({
-      where: { id: params.id },
+      where: { id },
       data: { status },
     });
 

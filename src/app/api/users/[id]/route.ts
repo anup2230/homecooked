@@ -29,11 +29,12 @@ const updateUserSchema = z.object({
 // GET /api/users/[id] — public profile
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const user = await db.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         name: true,
@@ -85,13 +86,14 @@ export async function GET(
 // PUT /api/users/[id] — update own profile
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  if (session.user.id !== params.id && (session.user as any).role !== 'ADMIN') {
+  if (session.user.id !== id && (session.user as any).role !== 'ADMIN') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -105,7 +107,7 @@ export async function PUT(
     const { cookProfile, ...userFields } = parsed.data;
 
     const updated = await db.user.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...userFields,
         ...(cookProfile

@@ -22,11 +22,12 @@ const updateDishSchema = z.object({
 // GET /api/dishes/[id]
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const dish = await db.dish.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         cook: {
           select: {
@@ -74,15 +75,16 @@ export async function GET(
 // PUT /api/dishes/[id] — cook updates their dish
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const dish = await db.dish.findUnique({ where: { id: params.id } });
+    const dish = await db.dish.findUnique({ where: { id } });
     if (!dish) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     if (dish.cookId !== session.user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -95,7 +97,7 @@ export async function PUT(
     }
 
     const updated = await db.dish.update({
-      where: { id: params.id },
+      where: { id },
       data: parsed.data,
     });
 
@@ -109,21 +111,22 @@ export async function PUT(
 // DELETE /api/dishes/[id] — cook deletes their dish
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const dish = await db.dish.findUnique({ where: { id: params.id } });
+    const dish = await db.dish.findUnique({ where: { id } });
     if (!dish) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     if (dish.cookId !== session.user.id && (session.user as any).role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await db.dish.delete({ where: { id: params.id } });
+    await db.dish.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('[dish DELETE]', err);
