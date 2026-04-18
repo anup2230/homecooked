@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from "next/image";
 import Link from "next/link";
@@ -70,7 +70,8 @@ interface DishDetail {
   _count: { reviews: number; orders: number };
 }
 
-export default function DishDetailPage({ params }: { params: { id: string } }) {
+export default function DishDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
   const { isLoggedIn, user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -84,7 +85,7 @@ export default function DishDetailPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     async function fetchDish() {
       try {
-        const res = await fetch(`/api/dishes/${params.id}`);
+        const res = await fetch(`/api/dishes/${id}`);
         if (res.status === 404) {
           router.replace('/discover');
           return;
@@ -99,7 +100,7 @@ export default function DishDetailPage({ params }: { params: { id: string } }) {
       }
     }
     fetchDish();
-  }, [params.id, router]);
+  }, [id, router]);
 
   const handleActionClick = (callback: () => void) => {
     if (isLoggedIn) {

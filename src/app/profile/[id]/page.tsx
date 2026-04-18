@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -39,19 +39,20 @@ interface PublicProfile {
   _count: { reviewsReceived: number };
 }
 
-export default function ProfilePage({ params }: { params: { id: string } }) {
+export default function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
   const { user: currentUser } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const isOwnProfile = currentUser?.id === params.id;
+  const isOwnProfile = currentUser?.id === id;
 
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const res = await fetch(`/api/users/${params.id}`);
+        const res = await fetch(`/api/users/${id}`);
         if (res.status === 404) {
           router.replace('/discover');
           return;
@@ -66,7 +67,7 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
       }
     }
     fetchProfile();
-  }, [params.id, router]);
+  }, [id, router]);
 
   if (isLoading) {
     return (
