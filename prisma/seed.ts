@@ -31,7 +31,11 @@ async function main() {
 
   const cook1 = await db.user.upsert({
     where: { email: 'cook1@homecooked.test' },
-    update: {},
+    update: {
+      location: 'Mission District, SF',
+      lat: 37.7599,
+      lng: -122.4148,
+    },
     create: {
       email: 'cook1@homecooked.test',
       name: 'Isabella Romano',
@@ -56,11 +60,24 @@ async function main() {
       },
     },
   });
+  await db.cookProfile.update({
+    where: { userId: cook1.id },
+    data: {
+      pickupNeighborhood: 'Mission District, SF',
+      pickupLat: 37.7599,
+      pickupLng: -122.4148,
+      pickupAddress: '826 Valencia St, San Francisco, CA 94110',
+    },
+  }).catch(() => {}); // ignore if profile doesn't exist yet
   console.log('✅ Cook 1:', cook1.email);
 
   const cook2 = await db.user.upsert({
     where: { email: 'cook2@homecooked.test' },
-    update: {},
+    update: {
+      location: 'Temescal, Oakland',
+      lat: 37.8322,
+      lng: -122.2669,
+    },
     create: {
       email: 'cook2@homecooked.test',
       name: 'Jordan Kim',
@@ -85,6 +102,15 @@ async function main() {
       },
     },
   });
+  await db.cookProfile.update({
+    where: { userId: cook2.id },
+    data: {
+      pickupNeighborhood: 'Temescal, Oakland',
+      pickupLat: 37.8322,
+      pickupLng: -122.2669,
+      pickupAddress: '4238 Telegraph Ave, Oakland, CA 94609',
+    },
+  }).catch(() => {});
   console.log('✅ Cook 2:', cook2.email);
 
   // ── Applicant ──────────────────────────────────────────────────────────────

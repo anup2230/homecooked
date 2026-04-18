@@ -103,8 +103,13 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    if (isBuyer && status !== 'CANCELLED') {
-      return NextResponse.json({ error: 'Buyers can only cancel orders' }, { status: 403 });
+    if (isBuyer && status !== 'CANCELLED' && status !== 'CONFIRMED') {
+      return NextResponse.json({ error: 'Buyers can only cancel or confirm orders' }, { status: 403 });
+    }
+
+    // Buyers can only confirm PENDING orders (dev/simple flow — no payment gate)
+    if (isBuyer && status === 'CONFIRMED' && order.status !== 'PENDING') {
+      return NextResponse.json({ error: 'Can only confirm pending orders' }, { status: 409 });
     }
 
     if (isBuyer && status === 'CANCELLED' && order.status !== 'PENDING') {
