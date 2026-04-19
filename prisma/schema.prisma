@@ -102,6 +102,7 @@ model CookProfile {
   pickupLng          Float?
   dropoffAvailable   Boolean  @default(false)
   dropoffNotes       String?   // e.g. "Drop-off within 3 miles, $5 fee"
+  confirmationMessage String?  // Auto-sent to buyer when order is confirmed
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 

@@ -124,6 +124,24 @@ export async function PUT(
       data: { status },
     });
 
+    // Auto-send cook's default confirmation message to buyer on confirm
+    if (isCook && status === 'CONFIRMED') {
+      const cookProfile = await db.cookProfile.findUnique({
+        where: { userId: order.cookId },
+        select: { confirmationMessage: true },
+      });
+      if (cookProfile?.confirmationMessage) {
+        await db.message.create({
+          data: {
+            senderId: order.cookId,
+            recipientId: order.buyerId,
+            body: cookProfile.confirmationMessage,
+            orderId: id,
+          },
+        });
+      }
+    }
+
     return NextResponse.json({ order: updated });
   } catch (err) {
     console.error('[order PUT]', err);

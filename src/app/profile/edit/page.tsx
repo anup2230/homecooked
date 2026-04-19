@@ -45,6 +45,7 @@ const profileSchema = z.object({
   pickupAddress: z.string().optional(),
   dropoffAvailable: z.boolean().optional(),
   dropoffNotes: z.string().optional(),
+  confirmationMessage: z.string().max(500).optional(),
 });
 
 type ProfileForm = z.infer<typeof profileSchema>;
@@ -97,6 +98,7 @@ export default function EditProfilePage() {
             kitchenName: u.cookProfile?.kitchenName ?? '',
             description: u.cookProfile?.description ?? '',
             acceptsOrders: u.cookProfile?.acceptsOrders ?? true,
+            confirmationMessage: u.cookProfile?.confirmationMessage ?? '',
           });
           setCuisineTags(u.cookProfile?.cuisineTags ?? []);
         });
@@ -147,6 +149,7 @@ export default function EditProfilePage() {
                   pickupAddress: data.pickupAddress || null,
                   dropoffAvailable: data.dropoffAvailable ?? false,
                   dropoffNotes: data.dropoffNotes || null,
+                  confirmationMessage: data.confirmationMessage || null,
                 },
               }
             : {}),
@@ -365,6 +368,25 @@ export default function EditProfilePage() {
                     onCheckedChange={val => profileForm.setValue('acceptsOrders', val)}
                   />
                   <Label htmlFor="acceptsOrders">Currently accepting orders</Label>
+                </div>
+
+                <Separator />
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold">Order Confirmation Message</h3>
+                  <p className="text-xs text-muted-foreground">This message is automatically sent to the buyer when you confirm their order. Great for sharing pickup instructions, timing, or a personal note.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Default confirmation message <span className="text-muted-foreground">(optional)</span></Label>
+                  <Textarea
+                    placeholder={`e.g. "Hi! Your order is confirmed 🎉 I'll have it ready at 123 Valencia St. Please arrive between 5–6pm. Text me if you need anything!"`}
+                    className="min-h-[100px]"
+                    maxLength={500}
+                    {...profileForm.register('confirmationMessage')}
+                  />
+                  <p className="text-xs text-muted-foreground text-right">
+                    {(profileForm.watch('confirmationMessage') ?? '').length}/500
+                  </p>
                 </div>
               </>
             )}
