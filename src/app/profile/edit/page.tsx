@@ -46,6 +46,7 @@ const profileSchema = z.object({
   dropoffAvailable: z.boolean().optional(),
   dropoffNotes: z.string().optional(),
   confirmationMessage: z.string().max(500).optional(),
+  cancellationPolicy: z.string().max(500).optional(),
 });
 
 type ProfileForm = z.infer<typeof profileSchema>;
@@ -99,6 +100,7 @@ export default function EditProfilePage() {
             description: u.cookProfile?.description ?? '',
             acceptsOrders: u.cookProfile?.acceptsOrders ?? true,
             confirmationMessage: u.cookProfile?.confirmationMessage ?? '',
+            cancellationPolicy: u.cookProfile?.cancellationPolicy ?? '',
           });
           setCuisineTags(u.cookProfile?.cuisineTags ?? []);
         });
@@ -150,6 +152,7 @@ export default function EditProfilePage() {
                   dropoffAvailable: data.dropoffAvailable ?? false,
                   dropoffNotes: data.dropoffNotes || null,
                   confirmationMessage: data.confirmationMessage || null,
+                  cancellationPolicy: data.cancellationPolicy || null,
                 },
               }
             : {}),
@@ -386,6 +389,24 @@ export default function EditProfilePage() {
                   />
                   <p className="text-xs text-muted-foreground text-right">
                     {(profileForm.watch('confirmationMessage') ?? '').length}/500
+                  </p>
+                </div>
+
+                <Separator />
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold">Cancellation Policy</h3>
+                  <p className="text-xs text-muted-foreground">Shown to buyers on your dish pages and in their order confirmation. Be clear about refunds and cancellation windows.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Cancellation policy <span className="text-muted-foreground">(optional)</span></Label>
+                  <Textarea
+                    placeholder={`e.g. "No refunds within 24 hours of pickup. Contact me ASAP if plans change."`}
+                    className="min-h-[80px]"
+                    maxLength={500}
+                    {...profileForm.register('cancellationPolicy')}
+                  />
+                  <p className="text-xs text-muted-foreground text-right">
+                    {(profileForm.watch('cancellationPolicy') ?? '').length}/500
                   </p>
                 </div>
               </>

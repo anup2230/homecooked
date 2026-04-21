@@ -23,6 +23,8 @@ const updateUserSchema = z.object({
       dropoffAvailable: z.boolean().optional(),
       dropoffNotes: z.string().nullable().optional(),
       confirmationMessage: z.string().max(500).nullable().optional(),
+      cancellationPolicy: z.string().max(500).nullable().optional(),
+      cancellationPolicy: z.string().max(500).nullable().optional(),
     })
     .optional(),
 });
@@ -57,6 +59,7 @@ export async function GET(
             dropoffAvailable: true,
             dropoffNotes: true,
             confirmationMessage: true,
+            cancellationPolicy: true,
             // pickupAddress intentionally omitted — only returned post-order
           },
         },

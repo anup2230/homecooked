@@ -7,10 +7,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, ChevronLeft, CheckCircle2, Lock, CreditCard, Info, Home, Truck, MapPin } from 'lucide-react';
+import { Loader2, ChevronLeft, CheckCircle2, Lock, CreditCard, Info, Home, Truck, MapPin, Clock, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+
+interface PickupSlot {
+  id: string;
+  label: string | null;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  maxOrders: number | null;
+  ordersThisWeek: number;
+}
 
 interface OrderDetail {
   id: string;
@@ -18,6 +28,7 @@ interface OrderDetail {
   totalPrice: number;
   status: string;
   notes: string | null;
+  pickupSlotId: string | null;
   dish: { id: string; title: string; imageUrl: string | null; price: number };
   cook: {
     id: string;
@@ -28,8 +39,18 @@ interface OrderDetail {
       pickupAddress: string | null;
       dropoffAvailable: boolean;
       dropoffNotes: string | null;
+      cancellationPolicy: string | null;
     } | null;
   };
+}
+
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+function formatSlotTime(time: string): string {
+  const [h, m] = time.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const hour = h % 12 === 0 ? 12 : h % 12;
+  return `${hour}:${m.toString().padStart(2, '0')} ${period}`;
 }
 
 export default function CheckoutPage({ params }: { params: Promise<{ orderId: string }> }) {
@@ -43,6 +64,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
+  const [pickupSlots, setPickupSlots] = useState<PickupSlot[]>([]);
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+  const [isSelectingSlot, setIsSelectingSlot] = useState(false);
 
   // Detect if Stripe is configured (not placeholder)
   const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
@@ -68,6 +92,12 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
           return;
         }
         setOrder(data.order);
+        if (data.order.pickupSlotId) setSelectedSlotId(data.order.pickupSlotId);
+        // Fetch available pickup slots for this cook
+        fetch(`/api/pickup-slots?cookId=${data.order.cook.id}`)
+          .then(r => r.json())
+          .then(d => setPickupSlots(d.slots ?? []))
+          .catch(() => {});
       } catch {
         setError('Failed to load order details.');
       } finally {
@@ -76,6 +106,25 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
     }
     fetchOrder();
   }, [isLoggedIn, orderId, router]);
+
+  const handleSelectSlot = async (slotId: string | null) => {
+    if (!order) return;
+    setIsSelectingSlot(true);
+    try {
+      const res = await fetch(`/api/orders/${order.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pickupSlotId: slotId }),
+      });
+      if (!res.ok) throw new Error('Failed to update pickup slot');
+      setSelectedSlotId(slotId);
+      toast({ title: slotId ? 'Pickup slot selected ✓' : 'Pickup slot removed' });
+    } catch (err: any) {
+      toast({ title: err.message, variant: 'destructive' });
+    } finally {
+      setIsSelectingSlot(false);
+    }
+  };
 
   // Dev mode: simulate payment confirmation
   const handleDevPayment = async () => {
@@ -119,6 +168,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
 
   // ── Success state ──────────────────────────────────────────────────────────
   if (paymentDone) {
+    const confirmedSlot = pickupSlots.find(s => s.id === selectedSlotId);
     return (
       <div className="container py-16 max-w-md mx-auto text-center space-y-4">
         <div className="flex justify-center">
@@ -129,6 +179,56 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
           Your order for <span className="font-medium">{order.dish.title}</span> has been sent to{' '}
           <span className="font-medium">{order.cook.cookProfile?.kitchenName ?? order.cook.name}</span>. They'll start preparing it soon.
         </p>
+
+        {/* Pickup Slot Picker */}
+        {pickupSlots.length > 0 && (
+          <div className="rounded-lg border bg-card p-4 text-sm text-left space-y-3">
+            <p className="font-semibold flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary" /> Choose a Pickup Time
+            </p>
+            <div className="space-y-2">
+              {pickupSlots.map(slot => {
+                const isFull = slot.maxOrders !== null && slot.ordersThisWeek >= slot.maxOrders;
+                const isSelected = selectedSlotId === slot.id;
+                return (
+                  <button
+                    key={slot.id}
+                    onClick={() => !isFull && handleSelectSlot(isSelected ? null : slot.id)}
+                    disabled={isFull || isSelectingSlot}
+                    className={`w-full text-left rounded-lg border p-3 transition-colors ${
+                      isSelected
+                        ? 'border-primary bg-primary/5'
+                        : isFull
+                        ? 'border-muted bg-muted/30 opacity-50 cursor-not-allowed'
+                        : 'hover:border-primary/50 hover:bg-muted/30'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">
+                          {DAY_NAMES[slot.dayOfWeek]} · {formatSlotTime(slot.startTime)} – {formatSlotTime(slot.endTime)}
+                        </p>
+                        {slot.label && (
+                          <p className="text-xs text-muted-foreground">{slot.label}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isFull && <span className="text-xs text-orange-500">Full</span>}
+                        {isSelected && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            {selectedSlotId && (
+              <p className="text-xs text-green-600 flex items-center gap-1">
+                <CheckCircle2 className="h-3 w-3" /> Pickup slot confirmed
+              </p>
+            )}
+          </div>
+        )}
+
         {order.cook.cookProfile?.pickupAddress && (
           <div className="rounded-lg border bg-card p-4 text-sm text-left space-y-1">
             <p className="font-semibold flex items-center gap-2"><Home className="h-4 w-4 text-primary" /> Pickup Address</p>
@@ -139,6 +239,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ orderId: st
           <div className="rounded-lg border bg-card p-4 text-sm text-left space-y-1">
             <p className="font-semibold flex items-center gap-2"><Truck className="h-4 w-4 text-primary" /> Drop-off</p>
             <p className="text-muted-foreground">{order.cook.cookProfile.dropoffNotes ?? 'Drop-off available — message the cook for details.'}</p>
+          </div>
+        )}
+        {order.cook.cookProfile?.cancellationPolicy && (
+          <div className="rounded-lg border border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 p-4 text-sm text-left space-y-1">
+            <p className="font-semibold flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
+              <AlertCircle className="h-4 w-4" /> Cancellation Policy
+            </p>
+            <p className="text-yellow-700 dark:text-yellow-400">{order.cook.cookProfile.cancellationPolicy}</p>
           </div>
         )}
         <div className="flex flex-col gap-2 pt-4">

@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, MapPin } from 'lucide-react';
+import { Star, MapPin, ShieldCheck, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatDistance } from '@/lib/distance';
@@ -24,7 +24,9 @@ interface DishCardProps {
       cookProfile?: {
         kitchenName?: string;
         avgRating?: number | null;
+        isVerified?: boolean;
       } | null;
+    advanceNoticeHrs?: number;
     };
     provider?: {
       id?: string;
@@ -48,6 +50,8 @@ export function DishCard({ dish, distanceMiles: distMi }: DishCardProps) {
   const imageUrl = dish.imageUrl ?? 'https://placehold.co/600x400.png';
   const rating = dish.cook?.cookProfile?.avgRating ?? dish.rating;
   const reviewCount = dish._count?.reviews ?? dish.reviewCount;
+  const isVerified = dish.cook?.cookProfile?.isVerified;
+  const advanceNoticeHrs = (dish as any).advanceNoticeHrs;
 
   return (
     <Link href={`/dishes/${dish.id}`} className="block overflow-hidden rounded-lg group">
@@ -83,6 +87,19 @@ export function DishCard({ dish, distanceMiles: distMi }: DishCardProps) {
               {reviewCount != null && <span>({reviewCount})</span>}
             </div>
           )}
+          <div className="flex items-center gap-2 flex-wrap">
+            {isVerified && (
+              <span className="inline-flex items-center gap-0.5 text-xs text-green-600 font-medium">
+                <ShieldCheck className="h-3 w-3" /> Verified
+              </span>
+            )}
+            {advanceNoticeHrs > 0 && (
+              <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground">
+                <Clock className="h-3 w-3" />
+                {advanceNoticeHrs < 24 ? `${advanceNoticeHrs}h notice` : `${Math.round(advanceNoticeHrs / 24)}d notice`}
+              </span>
+            )}
+          </div>
         </CardContent>
       </Card>
     </Link>

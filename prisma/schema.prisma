@@ -75,6 +75,7 @@ model User {
   reviewsGiven        Review[]            @relation("ReviewerReviews")
   reviewsReceived     Review[]            @relation("CookReviews")
   kitchenApplications KitchenApplication[]
+  pickupSlots         PickupSlot[]        @relation("CookPickupSlots")
 }
 
 enum Role {
@@ -103,6 +104,7 @@ model CookProfile {
   dropoffAvailable   Boolean  @default(false)
   dropoffNotes       String?   // e.g. "Drop-off within 3 miles, $5 fee"
   confirmationMessage String?  // Auto-sent to buyer when order is confirmed
+  cancellationPolicy String?  // e.g. "No refunds within 24 hours of pickup"
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -177,14 +179,32 @@ model Order {
   confirmedPickupAddress String?
   stripePaymentIntentId String?
   notes                String?
+  pickupSlotId         String?
   createdAt            DateTime    @default(now())
   updatedAt            DateTime    @updatedAt
 
-  buyer    User      @relation("BuyerOrders", fields: [buyerId], references: [id])
-  cook     User      @relation("CookOrders", fields: [cookId], references: [id])
-  dish     Dish      @relation(fields: [dishId], references: [id])
-  messages Message[]
-  review   Review?
+  buyer      User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+  cook       User        @relation("CookOrders", fields: [cookId], references: [id])
+  dish       Dish        @relation(fields: [dishId], references: [id])
+  messages   Message[]
+  review     Review?
+  pickupSlot PickupSlot? @relation(fields: [pickupSlotId], references: [id])
+}
+
+model PickupSlot {
+  id          String   @id @default(cuid())
+  cookId      String
+  label       String?  // e.g. "Saturday afternoon"
+  dayOfWeek   Int      // 0=Sun, 1=Mon, ... 6=Sat
+  startTime   String   // "14:00" (24hr format)
+  endTime     String   // "16:00" (24hr format)
+  isActive    Boolean  @default(true)
+  maxOrders   Int?     // optional capacity cap per slot
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cook   User    @relation("CookPickupSlots", fields: [cookId], references: [id], onDelete: Cascade)
+  orders Order[]
 }
 
 enum OrderStatus {

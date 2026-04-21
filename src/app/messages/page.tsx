@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { SendHorizonal, Loader2, MessageCircle, MapPin } from 'lucide-react';
+import { SendHorizonal, Loader2, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
@@ -412,30 +412,6 @@ export default function MessagesPage() {
 
               {/* Input */}
               <CardContent className="pt-3 pb-4 border-t shrink-0">
-                {/* Proposal form */}
-                {showProposalForm && (
-                  <div className="p-3 border rounded-lg mb-2 bg-muted/30">
-                    <p className="text-sm font-medium mb-2">📍 Propose Pickup</p>
-                    <div className="flex flex-col gap-2">
-                      <input
-                        type="datetime-local"
-                        value={proposalTime}
-                        onChange={e => setProposalTime(e.target.value)}
-                        className="border rounded px-2 py-1 text-sm bg-background"
-                      />
-                      <Input
-                        placeholder="Pickup address"
-                        value={proposalAddress}
-                        onChange={e => setProposalAddress(e.target.value)}
-                      />
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={handleSendProposal}>Send Proposal</Button>
-                        <Button size="sm" variant="ghost" onClick={() => setShowProposalForm(false)}>Cancel</Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 <form onSubmit={handleSendMessage} className="flex items-center gap-2">
                   <Input
                     value={newMessage}
@@ -444,17 +420,7 @@ export default function MessagesPage() {
                     autoComplete="off"
                     disabled={isSending}
                   />
-                  {selectedConversation?.cookId === user?.id && selectedConversation?.orderId && (
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="outline"
-                      onClick={() => setShowProposalForm(v => !v)}
-                      title="Propose pickup"
-                    >
-                      <MapPin className="h-4 w-4" />
-                    </Button>
-                  )}
+  
                   <Button type="submit" size="icon" disabled={!newMessage.trim() || isSending}>
                     {isSending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />

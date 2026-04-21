@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Star, ChevronLeft, MessageCircle, Loader2, ShoppingCart, AlertCircle, Minus, Plus, Clock } from "lucide-react";
+import { Star, ChevronLeft, MessageCircle, Loader2, ShoppingCart, AlertCircle, Minus, Plus, Clock, ShieldCheck } from "lucide-react";
 import { useAuth } from '@/context/auth-context';
 import {
   AlertDialog,
@@ -33,6 +33,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from '@/hooks/use-toast';
+
+function getOrderCutoffText(advanceNoticeHrs: number): string {
+  if (advanceNoticeHrs <= 0) return 'Order anytime';
+  if (advanceNoticeHrs < 24) return `Order at least ${advanceNoticeHrs}h in advance`;
+  const days = Math.round(advanceNoticeHrs / 24);
+  return `Order at least ${days} day${days > 1 ? 's' : ''} in advance`;
+}
 
 const StarRating = ({ rating }: { rating: number }) => (
   <div className="flex items-center gap-0.5">
@@ -69,6 +76,7 @@ interface DishDetail {
       avgRating: number | null;
       totalOrders: number;
       acceptsOrders: boolean;
+      cancellationPolicy?: string | null;
     } | null;
   };
   reviews: {
@@ -223,9 +231,16 @@ export default function DishDetailPage({ params }: { params: Promise<{ id: strin
                 </Avatar>
                 <div>
                   <p className="font-semibold text-card-foreground">Cooked by</p>
-                  <p className="text-lg font-bold text-primary group-hover:underline">
-                    {dish.cook.cookProfile?.kitchenName ?? dish.cook.name}
-                  </p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-lg font-bold text-primary group-hover:underline">
+                      {dish.cook.cookProfile?.kitchenName ?? dish.cook.name}
+                    </p>
+                    {dish.cook.cookProfile?.isVerified && (
+                      <span className="inline-flex items-center gap-1 text-xs text-green-600 font-medium">
+                        <ShieldCheck className="h-3.5 w-3.5" /> Verified
+                      </span>
+                    )}
+                  </div>
                   {dish.cook.cookProfile?.avgRating && (
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Star className="h-3.5 w-3.5 fill-primary text-primary" />
@@ -263,6 +278,20 @@ export default function DishDetailPage({ params }: { params: Promise<{ id: strin
                     <Badge key={a} variant="secondary">{a}</Badge>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Order cutoff */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4 shrink-0" />
+              <span>{getOrderCutoffText(dish.advanceNoticeHrs)}</span>
+            </div>
+
+            {/* Cancellation policy */}
+            {dish.cook.cookProfile?.cancellationPolicy && (
+              <div className="rounded-lg border border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 p-3 text-sm">
+                <p className="font-semibold text-yellow-800 dark:text-yellow-300 mb-1">Cancellation Policy</p>
+                <p className="text-yellow-700 dark:text-yellow-400">{dish.cook.cookProfile.cancellationPolicy}</p>
               </div>
             )}
 

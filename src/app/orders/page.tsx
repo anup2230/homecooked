@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 import Link from "next/link";
-import { MoreHorizontal, Loader2 } from "lucide-react";
+import { MoreHorizontal, Loader2, RotateCcw } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 
 type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'COMPLETED' | 'CANCELLED';
@@ -195,6 +195,13 @@ export default function OrdersPage() {
                           <DropdownMenuItem asChild>
                             <Link href={`/dishes/${order.dish.id}`}>View Dish</Link>
                           </DropdownMenuItem>
+                          {!viewAsCook && order.status === 'COMPLETED' && (
+                            <DropdownMenuItem asChild>
+                              <Link href={`/dishes/${order.dish.id}?reorder=true`}>
+                                <RotateCcw className="mr-2 h-3.5 w-3.5" /> Order Again
+                              </Link>
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem asChild>
                             <Link href="/messages">Messages</Link>
                           </DropdownMenuItem>

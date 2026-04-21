@@ -14,7 +14,7 @@ import Link from "next/link";
 import {
   DollarSign, Edit, PlusCircle, ShoppingCart, Star,
   Package, Clock, CheckCircle2, XCircle, Eye, MoreHorizontal,
-  Flame, Link2, Loader2, ChefHat
+  Flame, Link2, Loader2, ChefHat, CalendarClock
 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 
@@ -206,8 +206,18 @@ export default function CookKitchenPage() {
             <Link2 className="mr-2 h-4 w-4" /> Copy Link
           </Button>
           <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard/pickup-slots">
+              <CalendarClock className="mr-2 h-4 w-4" /> Pickup Slots
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
             <Link href={`/profile/${user?.id}`}>
               <Eye className="mr-2 h-4 w-4" /> Public View
+            </Link>
+          </Button>
+          <Button size="sm" variant="outline" asChild>
+            <Link href="/dashboard/pickup-slots">
+              <Clock className="mr-2 h-4 w-4" /> Pickup Slots
             </Link>
           </Button>
           <Button size="sm" asChild>

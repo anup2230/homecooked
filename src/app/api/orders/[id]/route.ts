@@ -7,6 +7,10 @@ const updateOrderSchema = z.object({
   status: z.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED']),
 });
 
+const patchOrderSchema = z.object({
+  pickupSlotId: z.string().nullable(),
+});
+
 // GET /api/orders/[id]
 export async function GET(
   req: NextRequest,
@@ -65,6 +69,53 @@ export async function GET(
     return NextResponse.json({ order });
   } catch (err) {
     console.error('[order GET]', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// PATCH /api/orders/[id] — update pickup slot
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const order = await db.order.findUnique({ where: { id } });
+    if (!order) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    const isBuyer = order.buyerId === session.user.id;
+    const isCook = order.cookId === session.user.id;
+    if (!isBuyer && !isCook) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const parsed = patchOrderSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 });
+    }
+
+    // Verify the slot belongs to this order's cook
+    if (parsed.data.pickupSlotId) {
+      const slot = await db.pickupSlot.findUnique({ where: { id: parsed.data.pickupSlotId } });
+      if (!slot || slot.cookId !== order.cookId) {
+        return NextResponse.json({ error: 'Invalid pickup slot' }, { status: 400 });
+      }
+    }
+
+    const updated = await db.order.update({
+      where: { id },
+      data: { pickupSlotId: parsed.data.pickupSlotId },
+    });
+
+    return NextResponse.json({ order: updated });
+  } catch (err) {
+    console.error('[order PATCH]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

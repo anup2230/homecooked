@@ -46,6 +46,7 @@ export async function GET(
                 totalOrders: true,
                 cuisineTags: true,
                 acceptsOrders: true,
+                cancellationPolicy: true,
               },
             },
           },
