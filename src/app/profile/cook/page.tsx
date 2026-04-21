@@ -14,7 +14,7 @@ import Link from "next/link";
 import {
   DollarSign, Edit, PlusCircle, ShoppingCart, Star,
   Package, Clock, CheckCircle2, XCircle, Eye, MoreHorizontal,
-  Flame, Link2, Loader2, ChefHat, CalendarClock
+  Flame, Link2, Loader2, ChefHat, CalendarClock, AlertCircle
 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 
@@ -24,6 +24,8 @@ interface CookProfile {
   kitchenName: string;
   description: string | null;
   isVerified: boolean;
+  isDraft: boolean;
+  onboardingStep: number;
   avgRating: number | null;
   totalOrders: number;
   cuisineTags: string[];
@@ -227,6 +229,24 @@ export default function CookKitchenPage() {
           </Button>
         </div>
       </div>
+
+      {/* Draft / pending approval banner */}
+      {cookProfile?.isDraft && (
+        <div className="flex items-start gap-3 rounded-lg border border-yellow-300 bg-yellow-50 dark:bg-yellow-950/20 p-4">
+          <AlertCircle className="h-5 w-5 text-yellow-600 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="font-semibold text-yellow-800 dark:text-yellow-300 text-sm">Pending approval</p>
+            <p className="text-xs text-yellow-700 dark:text-yellow-400 mt-0.5">
+              Your kitchen is in draft mode and not visible to buyers yet. We'll notify you once you're approved (usually 24–48 hours).
+            </p>
+          </div>
+          {cookProfile.onboardingStep < 6 && (
+            <Button size="sm" variant="outline" asChild className="shrink-0">
+              <Link href="/onboarding">Complete Setup</Link>
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">

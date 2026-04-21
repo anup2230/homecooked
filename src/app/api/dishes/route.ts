@@ -36,8 +36,11 @@ export async function GET(req: NextRequest) {
     const dishes = await db.dish.findMany({
       where: {
         // If cookId filter present (e.g. cook's own dashboard), show all their dishes incl. hidden.
-        // Otherwise only show available dishes to the public.
-        ...(cookId ? { cookId } : { isAvailable: true }),
+        // Otherwise only show available dishes from approved (non-draft) cooks.
+        ...(cookId ? { cookId } : {
+          isAvailable: true,
+          cook: { cookProfile: { isDraft: false } },
+        }),
         ...(search
           ? {
               OR: [
@@ -102,7 +105,9 @@ export async function POST(req: NextRequest) {
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  if ((session.user as any).role !== 'COOK') {
+  // Allow cooks AND users going through onboarding (role gets set to COOK during onboarding)
+  const userRecord = await db.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
+  if (userRecord?.role !== 'COOK' && userRecord?.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Only cooks can create dishes' }, { status: 403 });
   }
 

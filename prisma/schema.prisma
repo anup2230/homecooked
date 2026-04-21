@@ -105,6 +105,8 @@ model CookProfile {
   dropoffNotes       String?   // e.g. "Drop-off within 3 miles, $5 fee"
   confirmationMessage String?  // Auto-sent to buyer when order is confirmed
   cancellationPolicy String?  // e.g. "No refunds within 24 hours of pickup"
+  isDraft            Boolean  @default(true)  // hidden until admin approves
+  onboardingStep     Int      @default(0)     // wizard progress (0=not started)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 

@@ -24,7 +24,6 @@ const updateUserSchema = z.object({
       dropoffNotes: z.string().nullable().optional(),
       confirmationMessage: z.string().max(500).nullable().optional(),
       cancellationPolicy: z.string().max(500).nullable().optional(),
-      cancellationPolicy: z.string().max(500).nullable().optional(),
     })
     .optional(),
 });
@@ -50,6 +49,8 @@ export async function GET(
             kitchenName: true,
             description: true,
             isVerified: true,
+            isDraft: true,
+            onboardingStep: true,
             avgRating: true,
             totalOrders: true,
             cuisineTags: true,

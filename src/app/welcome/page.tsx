@@ -39,10 +39,11 @@ export default function WelcomePage() {
   };
 
   const handleFinish = () => {
-    // In a real app, you would save these preferences to the user's profile
-    console.log('Selected Role:', selectedRole);
-    console.log('Selected Interests:', selectedInterests);
-    router.push('/discover');
+    if (selectedRole === 'sell' || selectedRole === 'both') {
+      router.push('/onboarding');
+    } else {
+      router.push('/discover');
+    }
   };
 
   return (
