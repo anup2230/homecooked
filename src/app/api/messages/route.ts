@@ -7,6 +7,9 @@ const sendMessageSchema = z.object({
   recipientId: z.string(),
   body: z.string().min(1).max(2000),
   orderId: z.string().optional(),
+  messageType: z.enum(['TEXT', 'PICKUP_PROPOSAL']).optional(),
+  proposedTime: z.string().datetime().optional(),
+  proposedAddress: z.string().optional(),
 });
 
 // GET /api/messages — get all conversations for current user
@@ -17,7 +20,6 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Get all messages involving the current user, grouped by conversation partner
     const messages = await db.message.findMany({
       where: {
         OR: [
@@ -27,7 +29,7 @@ export async function GET(req: NextRequest) {
       },
       include: {
         sender: { select: { id: true, name: true, image: true } },
-        order: { select: { id: true, dish: { select: { title: true } } } },
+        order: { select: { id: true, cookId: true, dish: { select: { title: true } } } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -53,14 +55,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 });
     }
 
-    const { recipientId, body: messageBody, orderId } = parsed.data;
+    const { recipientId, body: messageBody, orderId, messageType, proposedTime, proposedAddress } = parsed.data;
+
+    let order = null;
 
     // If tied to an order, verify the sender is part of that order
     if (orderId) {
-      const order = await db.order.findUnique({ where: { id: orderId } });
+      order = await db.order.findUnique({ where: { id: orderId } });
       if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
       if (order.buyerId !== session.user.id && order.cookId !== session.user.id) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
+
+    // Pickup proposals can only be sent by the cook
+    if (messageType === 'PICKUP_PROPOSAL') {
+      if (!order || order.cookId !== session.user.id) {
+        return NextResponse.json({ error: 'Only the cook can propose a pickup' }, { status: 403 });
       }
     }
 
@@ -70,6 +81,10 @@ export async function POST(req: NextRequest) {
         recipientId,
         body: messageBody,
         orderId: orderId ?? null,
+        messageType: messageType ?? 'TEXT',
+        proposedTime: proposedTime ? new Date(proposedTime) : null,
+        proposedAddress: proposedAddress ?? null,
+        proposalStatus: messageType === 'PICKUP_PROPOSAL' ? 'PENDING' : null,
       },
       include: {
         sender: { select: { id: true, name: true, image: true } },

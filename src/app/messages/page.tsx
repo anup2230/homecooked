@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { SendHorizonal, Loader2, MessageCircle } from 'lucide-react';
+import { SendHorizonal, Loader2, MessageCircle, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
@@ -20,7 +20,11 @@ interface Message {
   createdAt: string;
   orderId: string | null;
   sender: { id: string; name: string | null; image: string | null };
-  order?: { id: string; dish: { title: string } } | null;
+  order?: { id: string; cookId: string; dish: { title: string } } | null;
+  messageType: 'TEXT' | 'PICKUP_PROPOSAL';
+  proposedTime: string | null;
+  proposedAddress: string | null;
+  proposalStatus: 'PENDING' | 'CONFIRMED' | 'DECLINED' | null;
 }
 
 interface Conversation {
@@ -30,6 +34,8 @@ interface Conversation {
   lastMessage: Message;
   messages: Message[];
   unreadCount: number;
+  orderId: string | null;
+  cookId: string | null;
 }
 
 export default function MessagesPage() {
@@ -41,6 +47,9 @@ export default function MessagesPage() {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [showProposalForm, setShowProposalForm] = useState(false);
+  const [proposalTime, setProposalTime] = useState('');
+  const [proposalAddress, setProposalAddress] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -70,6 +79,11 @@ export default function MessagesPage() {
             existing.lastMessage = msg;
           }
           if (!isSenderMe && !msg.readAt) existing.unreadCount++;
+          // Track orderId and cookId from messages that have an order
+          if (msg.order) {
+            existing.orderId = msg.order.id;
+            existing.cookId = msg.order.cookId;
+          }
         } else {
           convMap.set(partnerId, {
             partnerId,
@@ -78,6 +92,8 @@ export default function MessagesPage() {
             lastMessage: msg,
             messages: [msg],
             unreadCount: !isSenderMe && !msg.readAt ? 1 : 0,
+            orderId: msg.order?.id ?? null,
+            cookId: msg.order?.cookId ?? null,
           });
         }
       });
@@ -137,7 +153,13 @@ export default function MessagesPage() {
 
       if (!res.ok) throw new Error('Failed to send message');
       const data = await res.json();
-      const newMsg: Message = data.message;
+      const newMsg: Message = {
+        ...data.message,
+        messageType: data.message.messageType ?? 'TEXT',
+        proposedTime: data.message.proposedTime ?? null,
+        proposedAddress: data.message.proposedAddress ?? null,
+        proposalStatus: data.message.proposalStatus ?? null,
+      };
 
       // Optimistically update UI
       setConversations(prev =>
@@ -157,6 +179,45 @@ export default function MessagesPage() {
       setNewMessage(body); // Restore message on failure
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleProposalResponse = async (messageId: string, action: 'confirm' | 'decline') => {
+    try {
+      const res = await fetch(`/api/messages/${messageId}/respond`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      if (!res.ok) throw new Error();
+      await fetchMessages();
+    } catch {
+      toast({ title: 'Failed to respond to proposal', variant: 'destructive' });
+    }
+  };
+
+  const handleSendProposal = async () => {
+    if (!proposalTime || !proposalAddress || !selectedConversation?.orderId) return;
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientId: selectedPartnerId,
+          body: `Pickup proposal: ${proposalAddress} at ${new Date(proposalTime).toLocaleString()}`,
+          orderId: selectedConversation.orderId,
+          messageType: 'PICKUP_PROPOSAL',
+          proposedTime: new Date(proposalTime).toISOString(),
+          proposedAddress: proposalAddress,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      setShowProposalForm(false);
+      setProposalTime('');
+      setProposalAddress('');
+      await fetchMessages();
+    } catch {
+      toast({ title: 'Failed to send proposal', variant: 'destructive' });
     }
   };
 
@@ -228,7 +289,9 @@ export default function MessagesPage() {
                       </div>
                       <p className="text-xs text-muted-foreground truncate">
                         {convo.lastMessage.senderId === user?.id && 'You: '}
-                        {convo.lastMessage.body}
+                        {convo.lastMessage.messageType === 'PICKUP_PROPOSAL'
+                          ? '📍 Pickup proposal'
+                          : convo.lastMessage.body}
                       </p>
                     </div>
                     {convo.unreadCount > 0 && (
@@ -266,6 +329,41 @@ export default function MessagesPage() {
                 <div className="space-y-4">
                   {selectedConversation.messages.map(message => {
                     const isMe = message.senderId === user?.id;
+                    const isProposal = message.messageType === 'PICKUP_PROPOSAL';
+                    const canRespond = isProposal && message.proposalStatus === 'PENDING' && !isMe;
+
+                    if (isProposal) {
+                      return (
+                        <div key={message.id} className="flex justify-start mr-auto max-w-[75%]">
+                          <div className={cn(
+                            "rounded-2xl px-4 py-3 text-sm border",
+                            message.proposalStatus === 'CONFIRMED' ? "border-green-500 bg-green-50 dark:bg-green-950" :
+                            message.proposalStatus === 'DECLINED' ? "border-muted bg-muted/30 text-muted-foreground" :
+                            "border-primary/30 bg-primary/5"
+                          )}>
+                            <p className="font-semibold mb-1 flex items-center gap-1">
+                              📍 Pickup Proposal
+                              {message.proposalStatus === 'CONFIRMED' && <span className="text-green-600 text-xs ml-1">✅ Confirmed</span>}
+                              {message.proposalStatus === 'DECLINED' && <span className="text-muted-foreground text-xs ml-1">✗ Declined</span>}
+                            </p>
+                            {message.proposedTime && (
+                              <p className="text-sm">🕐 {new Date(message.proposedTime).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                            )}
+                            {message.proposedAddress && (
+                              <p className="text-sm">📍 {message.proposedAddress}</p>
+                            )}
+                            {canRespond && (
+                              <div className="flex gap-2 mt-3">
+                                <Button size="sm" onClick={() => handleProposalResponse(message.id, 'confirm')}>✓ Confirm</Button>
+                                <Button size="sm" variant="outline" onClick={() => handleProposalResponse(message.id, 'decline')}>✗ Decline</Button>
+                              </div>
+                            )}
+                            <p className="text-xs mt-2 text-muted-foreground">{formatTime(message.createdAt)}</p>
+                          </div>
+                        </div>
+                      );
+                    }
+
                     return (
                       <div
                         key={message.id}
@@ -314,6 +412,30 @@ export default function MessagesPage() {
 
               {/* Input */}
               <CardContent className="pt-3 pb-4 border-t shrink-0">
+                {/* Proposal form */}
+                {showProposalForm && (
+                  <div className="p-3 border rounded-lg mb-2 bg-muted/30">
+                    <p className="text-sm font-medium mb-2">📍 Propose Pickup</p>
+                    <div className="flex flex-col gap-2">
+                      <input
+                        type="datetime-local"
+                        value={proposalTime}
+                        onChange={e => setProposalTime(e.target.value)}
+                        className="border rounded px-2 py-1 text-sm bg-background"
+                      />
+                      <Input
+                        placeholder="Pickup address"
+                        value={proposalAddress}
+                        onChange={e => setProposalAddress(e.target.value)}
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={handleSendProposal}>Send Proposal</Button>
+                        <Button size="sm" variant="ghost" onClick={() => setShowProposalForm(false)}>Cancel</Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <form onSubmit={handleSendMessage} className="flex items-center gap-2">
                   <Input
                     value={newMessage}
@@ -322,6 +444,17 @@ export default function MessagesPage() {
                     autoComplete="off"
                     disabled={isSending}
                   />
+                  {selectedConversation?.cookId === user?.id && selectedConversation?.orderId && (
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="outline"
+                      onClick={() => setShowProposalForm(v => !v)}
+                      title="Propose pickup"
+                    >
+                      <MapPin className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button type="submit" size="icon" disabled={!newMessage.trim() || isSending}>
                     {isSending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />

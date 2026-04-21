@@ -154,6 +154,17 @@ enum DietaryOption {
   DAIRY_FREE
 }
 
+enum MessageType {
+  TEXT
+  PICKUP_PROPOSAL
+}
+
+enum ProposalStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
+}
+
 model Order {
   id                   String      @id @default(cuid())
   buyerId              String
@@ -163,6 +174,7 @@ model Order {
   totalPrice           Float
   status               OrderStatus @default(PENDING)
   pickupTime           DateTime?
+  confirmedPickupAddress String?
   stripePaymentIntentId String?
   notes                String?
   createdAt            DateTime    @default(now())
@@ -185,13 +197,17 @@ enum OrderStatus {
 }
 
 model Message {
-  id          String   @id @default(cuid())
-  orderId     String?
-  senderId    String
-  recipientId String
-  body        String
-  readAt      DateTime?
-  createdAt   DateTime @default(now())
+  id              String          @id @default(cuid())
+  orderId         String?
+  senderId        String
+  recipientId     String
+  body            String
+  readAt          DateTime?
+  createdAt       DateTime        @default(now())
+  messageType     MessageType     @default(TEXT)
+  proposedTime    DateTime?
+  proposedAddress String?
+  proposalStatus  ProposalStatus?
 
   order     Order?   @relation(fields: [orderId], references: [id])
   sender    User     @relation("SentMessages", fields: [senderId], references: [id])
