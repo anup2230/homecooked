@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, Star, Instagram, CheckCircle, Loader2, ExternalLink } from 'lucide-react';
+import { MapPin, Star, Instagram, ShoppingBag, CheckCircle, Loader2, ExternalLink } from 'lucide-react';
 
 interface KitchenPage {
   id: string;
