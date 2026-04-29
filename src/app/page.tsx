@@ -61,17 +61,43 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative bg-secondary/50 py-20 md:py-32">
-        <div className="container text-center">
-          <h1 className="text-4xl md:text-6xl font-bold font-headline text-primary tracking-tight">
+      <section className="relative bg-secondary/50 py-20 md:py-32 overflow-hidden">
+        {/* Floating food emojis */}
+        <div className="pointer-events-none select-none absolute inset-0 overflow-hidden" aria-hidden>
+          <span className="absolute text-4xl animate-float delay-0"   style={{top:'12%', left:'6%'}}>🍜</span>
+          <span className="absolute text-3xl animate-float delay-500" style={{top:'20%', left:'18%'}}>✨</span>
+          <span className="absolute text-4xl animate-float-slow delay-300" style={{top:'8%', right:'10%'}}>🥘</span>
+          <span className="absolute text-3xl animate-float delay-700" style={{top:'55%', left:'4%'}}>🌿</span>
+          <span className="absolute text-4xl animate-float-slow delay-1000" style={{top:'70%', right:'6%'}}>🍱</span>
+          <span className="absolute text-3xl animate-float delay-1500" style={{top:'30%', right:'20%'}}>⭐</span>
+          <span className="absolute text-4xl animate-float delay-2000" style={{bottom:'15%', left:'14%'}}>🫙</span>
+          <span className="absolute text-3xl animate-float-slow delay-2500" style={{bottom:'20%', right:'16%'}}>🥗</span>
+        </div>
+
+        <div className="container text-center relative z-10">
+          {/* Chef mascot */}
+          <div className="flex justify-center mb-6">
+            <div className="animate-bounce-in">
+              <div className="relative inline-block">
+                <div className="text-8xl animate-wiggle cursor-default select-none" title="Hi! I'm Cooky 👋">
+                  👨‍🍳
+                </div>
+                <div className="absolute -top-2 -right-4 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full shadow animate-bounce">
+                  Hi! 👋
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h1 className="animate-fade-up opacity-0 delay-200 text-4xl md:text-6xl font-bold font-headline text-primary tracking-tight">
             Discover Authentic Homemade Meals
             <br />
             in Your Neighborhood.
           </h1>
-          <p className="mt-6 max-w-3xl mx-auto text-lg md:text-xl text-foreground/80">
+          <p className="animate-fade-up opacity-0 delay-300 mt-6 max-w-3xl mx-auto text-lg md:text-xl text-foreground/80">
             Explore a world of flavors from talented independent cooks in your community.
           </p>
-          <div className="mt-8 flex justify-center gap-4">
+          <div className="animate-fade-up opacity-0 delay-500 mt-8 flex justify-center gap-4">
             <Button asChild size="lg">
               <Link href="/discover">Discover Dishes</Link>
             </Button>
@@ -86,7 +112,7 @@ export default function HomePage() {
       <section className="py-16 md:py-24">
         <div className="container">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold font-headline">Featured Dishes</h2>
+            <h2 className="text-3xl font-bold font-headline animate-fade-up">Featured Dishes</h2>
             <Button variant="ghost" asChild>
               <Link href="/discover">
                 View All
