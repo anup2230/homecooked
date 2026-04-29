@@ -182,7 +182,18 @@ export default function OrdersPage() {
                     <TableCell className="hidden md:table-cell">
                       {new Date(order.createdAt).toLocaleDateString()}
                     </TableCell>
-                    <TableCell className="text-right">${order.totalPrice.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex flex-col items-end gap-1.5">
+                        <span>${order.totalPrice.toFixed(2)}</span>
+                        {!viewAsCook && order.status === 'COMPLETED' && (
+                          <Button asChild size="sm" variant="outline" className="h-7 text-xs gap-1">
+                            <Link href={`/dishes/${order.dish.id}?reorder=true`}>
+                              <RotateCcw className="h-3 w-3" /> Order Again
+                            </Link>
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

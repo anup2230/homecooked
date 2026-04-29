@@ -15,7 +15,8 @@ import Link from "next/link";
 import {
   DollarSign, Edit, PlusCircle, ShoppingCart, Star,
   Package, Clock, CheckCircle2, XCircle, Eye, MoreHorizontal,
-  Flame, Link2, Loader2, ChefHat, CalendarClock, AlertCircle, Camera
+  Flame, Link2, Loader2, ChefHat, CalendarClock, AlertCircle, Camera,
+  TrendingUp, ToggleLeft, ToggleRight
 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 
@@ -190,6 +191,22 @@ export default function CookKitchenPage() {
     }
   }
 
+  async function toggleAcceptsOrders() {
+    if (!user?.id || !cookProfile) return;
+    const newVal = !cookProfile.acceptsOrders;
+    try {
+      await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cookProfile: { acceptsOrders: newVal } }),
+      });
+      setCookProfile(prev => prev ? { ...prev, acceptsOrders: newVal } : prev);
+      toast({ title: newVal ? 'Now accepting orders ✓' : 'Orders paused' });
+    } catch {
+      toast({ title: 'Failed to update', variant: 'destructive' });
+    }
+  }
+
   async function toggleDishAvailability(dishId: string, isAvailable: boolean) {
     try {
       await fetch(`/api/dishes/${dishId}`, {
@@ -331,6 +348,17 @@ export default function CookKitchenPage() {
           </div>
         )}
         <div className="flex flex-wrap gap-2 pt-3">
+          {/* Accepting orders toggle */}
+          <Button
+            variant={cookProfile?.acceptsOrders ? 'default' : 'outline'}
+            size="sm"
+            onClick={toggleAcceptsOrders}
+            className={cookProfile?.acceptsOrders ? 'bg-green-600 hover:bg-green-700 text-white' : 'text-muted-foreground'}
+          >
+            {cookProfile?.acceptsOrders
+              ? <><ToggleRight className="mr-1.5 h-4 w-4" /> Accepting Orders</>
+              : <><ToggleLeft className="mr-1.5 h-4 w-4" /> Paused</>}
+          </Button>
           <Button variant="outline" size="sm" asChild>
             <Link href="/dashboard/pickup-slots">
               <CalendarClock className="mr-1.5 h-3.5 w-3.5" /> Pickup Slots
@@ -402,6 +430,67 @@ export default function CookKitchenPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Earnings Breakdown */}
+      {(() => {
+        const completedOrders = orders.filter(o => o.status === 'COMPLETED');
+        const now = new Date();
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const thisWeekRevenue = completedOrders
+          .filter(o => new Date(o.createdAt) >= weekAgo)
+          .reduce((s, o) => s + o.totalPrice, 0);
+        // Revenue per dish
+        const byDish = completedOrders.reduce<Record<string, { title: string; revenue: number; count: number }>>((acc, o) => {
+          if (!acc[o.dish.id]) acc[o.dish.id] = { title: o.dish.title, revenue: 0, count: 0 };
+          acc[o.dish.id].revenue += o.totalPrice;
+          acc[o.dish.id].count += o.quantity;
+          return acc;
+        }, {});
+        const topDishes = Object.values(byDish).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+        return (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Earnings</CardTitle>
+                <CardDescription>Revenue from completed orders.</CardDescription>
+              </div>
+              <TrendingUp className="h-5 w-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-lg bg-muted/50 p-4">
+                  <p className="text-xs text-muted-foreground mb-1">This week</p>
+                  <p className="text-2xl font-bold text-primary">${thisWeekRevenue.toFixed(2)}</p>
+                </div>
+                <div className="rounded-lg bg-muted/50 p-4">
+                  <p className="text-xs text-muted-foreground mb-1">All time</p>
+                  <p className="text-2xl font-bold">${totalRevenue.toFixed(2)}</p>
+                </div>
+              </div>
+              {topDishes.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold mb-2">Top dishes</p>
+                  <div className="space-y-2">
+                    {topDishes.map((d, i) => (
+                      <div key={d.title} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground w-4">{i + 1}.</span>
+                          <span className="truncate max-w-[180px]">{d.title}</span>
+                          <span className="text-xs text-muted-foreground">×{d.count}</span>
+                        </div>
+                        <span className="font-medium">${d.revenue.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {completedOrders.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-2">No completed orders yet — earnings will show here once orders are fulfilled.</p>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Incoming Orders */}
       <Card>
