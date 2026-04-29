@@ -79,8 +79,8 @@ export default function HomePage() {
           <div className="flex justify-center mb-6">
             <div className="animate-bounce-in">
               <div className="relative inline-block">
-                <div className="text-8xl animate-wiggle cursor-default select-none" title="Hi! I'm Cooky 👋">
-                  👨‍🍳
+                <div className="text-8xl animate-wiggle cursor-default select-none" title="Hi! I'm Nonna 👋">
+                  👵
                 </div>
                 <div className="absolute -top-2 -right-4 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full shadow animate-bounce">
                   Hi! 👋
