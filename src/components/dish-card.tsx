@@ -1,8 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, MapPin, ShieldCheck, Clock } from 'lucide-react';
+import { Star, MapPin, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistance } from '@/lib/distance';
 
 // Accepts both the old mock Dish shape and the new API shape
@@ -50,14 +50,32 @@ export function DishCard({ dish, distanceMiles: distMi }: DishCardProps) {
   const imageUrl = dish.imageUrl ?? 'https://placehold.co/600x400.png';
   const rating = dish.cook?.cookProfile?.avgRating ?? dish.rating;
   const reviewCount = dish._count?.reviews ?? dish.reviewCount;
-  const isVerified = dish.cook?.cookProfile?.isVerified;
   const advanceNoticeHrs = (dish as any).advanceNoticeHrs;
+  const cookId = dish.cook?.id;
+  const cookImage = (dish.cook as any)?.image ?? null;
+  const kitchenName = dish.cook?.cookProfile?.kitchenName ?? dish.cook?.name ?? null;
 
   return (
     <Link href={`/dishes/${dish.id}`} className="block overflow-hidden rounded-lg group">
       <Card className="h-full flex flex-col transition-all duration-200 ease-in-out group-hover:shadow-xl border-0 shadow-none hover:shadow-none">
         <CardHeader className="p-0">
           <div className="relative aspect-square w-full overflow-hidden rounded-lg">
+            {/* Cook avatar — links to kitchen page */}
+            {cookId && (
+              <div
+                className="absolute bottom-2 left-2 z-10"
+                onClick={e => e.preventDefault()}
+              >
+                <Link href={`/kitchen/${cookId}`}>
+                  <Avatar className="h-8 w-8 border-2 border-white shadow-md hover:scale-110 transition-transform">
+                    <AvatarImage src={cookImage} alt={kitchenName ?? 'Cook'} />
+                    <AvatarFallback className="text-xs bg-primary/80 text-white font-bold">
+                      {(kitchenName ?? 'C').charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+              </div>
+            )}
             {distMi !== undefined && (
               <div className="absolute top-2 left-2 z-10 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded-full flex items-center gap-1">
                 <MapPin className="h-2.5 w-2.5" />
@@ -88,11 +106,6 @@ export function DishCard({ dish, distanceMiles: distMi }: DishCardProps) {
             </div>
           )}
           <div className="flex items-center gap-2 flex-wrap">
-            {isVerified && (
-              <span className="inline-flex items-center gap-0.5 text-xs text-green-600 font-medium">
-                <ShieldCheck className="h-3 w-3" /> Verified
-              </span>
-            )}
             {advanceNoticeHrs > 0 && (
               <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
