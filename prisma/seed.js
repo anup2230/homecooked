@@ -56,7 +56,7 @@ async function main() {
             kitchenName: `Cook ${i}'s Kitchen`,
             description: `Homemade dishes from Cook ${i}`,
             cuisineTags: ['Italian', 'American'],
-            isVerified: true,
+            isVerified: false,
             acceptsOrders: true,
           },
         },
