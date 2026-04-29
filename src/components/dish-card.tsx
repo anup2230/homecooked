@@ -60,22 +60,6 @@ export function DishCard({ dish, distanceMiles: distMi }: DishCardProps) {
       <Card className="h-full flex flex-col transition-all duration-200 ease-in-out group-hover:shadow-xl border-0 shadow-none hover:shadow-none">
         <CardHeader className="p-0">
           <div className="relative aspect-square w-full overflow-hidden rounded-lg">
-            {/* Cook avatar — links to kitchen page */}
-            {cookId && (
-              <div
-                className="absolute bottom-2 left-2 z-10"
-                onClick={e => e.preventDefault()}
-              >
-                <Link href={`/kitchen/${cookId}`}>
-                  <Avatar className="h-8 w-8 border-2 border-white shadow-md hover:scale-110 transition-transform">
-                    <AvatarImage src={cookImage} alt={kitchenName ?? 'Cook'} />
-                    <AvatarFallback className="text-xs bg-primary/80 text-white font-bold">
-                      {(kitchenName ?? 'C').charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </Link>
-              </div>
-            )}
             {distMi !== undefined && (
               <div className="absolute top-2 left-2 z-10 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded-full flex items-center gap-1">
                 <MapPin className="h-2.5 w-2.5" />
@@ -105,7 +89,19 @@ export function DishCard({ dish, distanceMiles: distMi }: DishCardProps) {
               {reviewCount != null && <span>({reviewCount})</span>}
             </div>
           )}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            {cookId && (
+              <div onClick={e => e.preventDefault()}>
+                <Link href={`/kitchen/${cookId}`}>
+                  <Avatar className="h-6 w-6 border border-border shadow-sm hover:scale-110 transition-transform">
+                    <AvatarImage src={cookImage} alt={kitchenName ?? 'Cook'} />
+                    <AvatarFallback className="text-[10px] bg-primary/80 text-white font-bold">
+                      {(kitchenName ?? 'C').charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+              </div>
+            )}
             {advanceNoticeHrs > 0 && (
               <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
