@@ -168,7 +168,9 @@ export default function OrdersPage() {
                       />
                     </TableCell>
                     <TableCell className="font-medium">
-                      <p>{order.dish.title}</p>
+                      <Link href={`/orders/${order.id}`} className="hover:underline">
+                        <p>{order.dish.title}</p>
+                      </Link>
                       <p className="text-sm text-muted-foreground">x{order.quantity}</p>
                     </TableCell>
                     <TableCell>
@@ -203,6 +205,9 @@ export default function OrdersPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/orders/${order.id}`}>View Order</Link>
+                          </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link href={`/dishes/${order.dish.id}`}>View Dish</Link>
                           </DropdownMenuItem>
