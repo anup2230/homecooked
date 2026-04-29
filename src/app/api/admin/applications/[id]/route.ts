@@ -55,9 +55,11 @@ export async function PATCH(
           cuisineTags: application.cuisineTags,
           permitNumber: application.permitNumber ?? undefined,
           isVerified: true,
+          isDraft: false,
         },
         update: {
           isVerified: true,
+          isDraft: false,
         },
       });
     }

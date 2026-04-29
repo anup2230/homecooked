@@ -29,11 +29,11 @@ export async function PATCH(
       });
     }
 
-    // Update cook verification if provided
+    // Update cook verification if provided — also toggle isDraft accordingly
     if (body.isVerified !== undefined) {
       await db.cookProfile.update({
         where: { userId: id },
-        data: { isVerified: body.isVerified },
+        data: { isVerified: body.isVerified, isDraft: !body.isVerified },
       });
     }
 
