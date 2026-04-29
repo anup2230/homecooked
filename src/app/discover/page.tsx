@@ -227,7 +227,7 @@ export default function DiscoverPage() {
             />
           </div>
 
-          <Accordion type="multiple" defaultValue={['sort', 'price', 'delivery', 'service']} className="w-full">
+          <Accordion type="multiple" defaultValue={['sort', 'cuisines', 'price', 'delivery', 'service']} className="w-full">
             <AccordionItem value="sort">
               <AccordionTrigger>Sort by</AccordionTrigger>
               <AccordionContent>
@@ -261,6 +261,29 @@ export default function DiscoverPage() {
                     <Navigation className="h-3 w-3" /> Location active
                   </p>
                 )}
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="cuisines">
+              <AccordionTrigger>Cuisines</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-1">
+                  {categories.map(cat => {
+                    const Icon = cat.icon;
+                    return (
+                      <Button
+                        key={cat.id}
+                        variant={selectedCategory === cat.id ? 'secondary' : 'ghost'}
+                        className="w-full justify-start"
+                        onClick={() => handleCategoryClick(cat.id)}
+                        disabled={searchMode === 'kitchens'}
+                      >
+                        <Icon className="mr-2 h-4 w-4" />
+                        {cat.name}
+                      </Button>
+                    );
+                  })}
+                </div>
               </AccordionContent>
             </AccordionItem>
 
@@ -339,26 +362,7 @@ export default function DiscoverPage() {
             </AccordionItem>
           </Accordion>
 
-          <div>
-            <h3 className="font-semibold mb-2">Categories</h3>
-            <div className="space-y-2">
-              {categories.map(cat => {
-                const Icon = cat.icon;
-                return (
-                  <Button
-                    key={cat.id}
-                    variant={selectedCategory === cat.id ? 'secondary' : 'ghost'}
-                    className="w-full justify-start"
-                    onClick={() => handleCategoryClick(cat.id)}
-                    disabled={searchMode === 'kitchens'}
-                  >
-                    <Icon className="mr-2 h-5 w-5" />
-                    {cat.name}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
+
         </div>
       </aside>
 
