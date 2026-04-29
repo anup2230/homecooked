@@ -14,17 +14,32 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const body = await req.json() as { role: Role };
+  const body = await req.json() as { role?: Role; isVerified?: boolean };
 
-  if (!body.role || !Object.values(Role).includes(body.role)) {
+  if (body.role !== undefined && !Object.values(Role).includes(body.role)) {
     return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
   }
 
   try {
-    const user = await db.user.update({
+    // Update role if provided
+    if (body.role !== undefined) {
+      await db.user.update({
+        where: { id },
+        data: { role: body.role },
+      });
+    }
+
+    // Update cook verification if provided
+    if (body.isVerified !== undefined) {
+      await db.cookProfile.update({
+        where: { userId: id },
+        data: { isVerified: body.isVerified },
+      });
+    }
+
+    const user = await db.user.findUnique({
       where: { id },
-      data: { role: body.role },
-      select: { id: true, name: true, email: true, role: true },
+      select: { id: true, name: true, email: true, role: true, cookProfile: { select: { isVerified: true } } },
     });
     return NextResponse.json(user);
   } catch {

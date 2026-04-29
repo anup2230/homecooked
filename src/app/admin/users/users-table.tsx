@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -17,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ShieldCheck, ShieldOff } from 'lucide-react';
 
 type User = {
   id: string;
@@ -36,6 +38,29 @@ const roleColors: Record<string, string> = {
 export function UsersTable({ users }: { users: User[] }) {
   const [userData, setUserData] = useState(users);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState<string | null>(null);
+
+  async function handleVerifyToggle(userId: string, isVerified: boolean) {
+    setVerifying(userId);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isVerified }),
+      });
+      if (res.ok) {
+        setUserData(prev =>
+          prev.map(u =>
+            u.id === userId
+              ? { ...u, cookProfile: u.cookProfile ? { ...u.cookProfile, isVerified } : null }
+              : u
+          )
+        );
+      }
+    } finally {
+      setVerifying(null);
+    }
+  }
 
   async function handleRoleChange(userId: string, newRole: string) {
     setUpdating(userId);
@@ -85,11 +110,24 @@ export function UsersTable({ users }: { users: User[] }) {
               </TableCell>
               <TableCell>
                 {user.cookProfile ? (
-                  user.cookProfile.isVerified ? (
-                    <span className="text-green-600 text-sm font-medium">✓ Verified</span>
-                  ) : (
-                    <span className="text-gray-400 text-sm">Unverified</span>
-                  )
+                  <div className="flex items-center gap-2">
+                    {user.cookProfile.isVerified ? (
+                      <span className="text-green-600 text-sm font-medium">✓ Verified</span>
+                    ) : (
+                      <span className="text-gray-400 text-sm">Unverified</span>
+                    )}
+                    <Button
+                      size="sm"
+                      variant={user.cookProfile.isVerified ? 'outline' : 'default'}
+                      className={`h-7 text-xs ${user.cookProfile.isVerified ? 'text-red-600 border-red-200 hover:bg-red-50' : 'bg-green-600 hover:bg-green-700'}`}
+                      disabled={verifying === user.id}
+                      onClick={() => handleVerifyToggle(user.id, !user.cookProfile!.isVerified)}
+                    >
+                      {verifying === user.id ? '...' : user.cookProfile.isVerified
+                        ? <><ShieldOff className="h-3 w-3 mr-1" />Unverify</>
+                        : <><ShieldCheck className="h-3 w-3 mr-1" />Verify</>}
+                    </Button>
+                  </div>
                 ) : (
                   <span className="text-gray-300 text-sm">—</span>
                 )}
