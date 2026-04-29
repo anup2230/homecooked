@@ -39,7 +39,7 @@ export function Header() {
           </Link>
           <nav className="flex items-center gap-6 text-sm">
             <Link href="/discover" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Discover
+              Discover Food
             </Link>
             {isAdmin ? (
               <Link href="/admin" className="transition-colors hover:text-foreground/80 text-foreground/60 font-medium text-primary/80">
