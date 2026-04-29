@@ -18,7 +18,7 @@ import { useAuth } from "@/context/auth-context"
 import { useRouter } from "next/navigation"
 
 export function Header() {
-  const { isLoggedIn, isLoading, isCook, user, logout } = useAuth();
+  const { isLoggedIn, isLoading, isCook, isAdmin, user, logout } = useAuth();
   const router = useRouter();
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
@@ -41,7 +41,11 @@ export function Header() {
             <Link href="/discover" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Discover
             </Link>
-            {isCook ? (
+            {isAdmin ? (
+              <Link href="/admin" className="transition-colors hover:text-foreground/80 text-foreground/60 font-medium text-primary/80">
+                Admin
+              </Link>
+            ) : isCook ? (
               <>
                 <Link href="/profile/cook" className="transition-colors hover:text-foreground/80 text-foreground/60">
                   My Kitchen
@@ -113,6 +117,11 @@ export function Header() {
                   {isCook && (
                     <DropdownMenuItem asChild>
                       <Link href="/orders?role=cook" className="w-full">My Sales</Link>
+                    </DropdownMenuItem>
+                  )}
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" className="w-full">Admin Panel</Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
