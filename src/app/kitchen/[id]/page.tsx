@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, Star, Instagram, ShoppingBag, CheckCircle, Loader2, ExternalLink } from 'lucide-react';
+import { MapPin, Star, Instagram, CheckCircle, Loader2, ExternalLink } from 'lucide-react';
 
 interface KitchenPage {
   id: string;
@@ -144,13 +144,6 @@ export default function KitchenLandingPage({ params }: { params: Promise<{ id: s
 
         {/* CTA buttons */}
         <div className="flex flex-col gap-3">
-          <Button asChild size="lg" className="w-full text-base" disabled={!profile.acceptsOrders}>
-            <Link href={`/profile/${id}`}>
-              <ShoppingBag className="mr-2 h-5 w-5" />
-              Order from {profile.kitchenName}
-            </Link>
-          </Button>
-
           {instagramHandle && (
             <Button asChild size="lg" variant="outline" className="w-full text-base">
               <a
@@ -163,13 +156,6 @@ export default function KitchenLandingPage({ params }: { params: Promise<{ id: s
               </a>
             </Button>
           )}
-
-          <Button asChild variant="ghost" className="w-full text-sm text-muted-foreground">
-            <Link href="/discover">
-              Browse all kitchens on Homecooked
-              <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
-            </Link>
-          </Button>
         </div>
 
         <Separator />
@@ -207,8 +193,18 @@ export default function KitchenLandingPage({ params }: { params: Promise<{ id: s
           </div>
         )}
 
+        {/* Browse all kitchens */}
+        <div className="text-center pt-2">
+          <Button asChild variant="ghost" className="text-sm text-muted-foreground">
+            <Link href="/discover">
+              Browse all kitchens on Homecooked
+              <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
+            </Link>
+          </Button>
+        </div>
+
         {/* Homecooked footer */}
-        <div className="text-center pt-4">
+        <div className="text-center pt-2">
           <Link href="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             Powered by <span className="font-semibold text-primary">Homecooked</span>
           </Link>
