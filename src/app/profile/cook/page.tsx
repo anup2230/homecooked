@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +15,7 @@ import Link from "next/link";
 import {
   DollarSign, Edit, PlusCircle, ShoppingCart, Star,
   Package, Clock, CheckCircle2, XCircle, Eye, MoreHorizontal,
-  Flame, Link2, Loader2, ChefHat, CalendarClock, AlertCircle
+  Flame, Link2, Loader2, ChefHat, CalendarClock, AlertCircle, Camera
 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 
@@ -32,6 +33,7 @@ interface CookProfile {
   acceptsOrders: boolean;
   instagramHandle: string | null;
   pickupNeighborhood: string | null;
+  bannerUrl: string | null;
 }
 
 interface Dish {
@@ -82,6 +84,64 @@ export default function CookKitchenPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  async function uploadImage(file: File, folder: 'banners' | 'avatars'): Promise<string> {
+    const presignRes = await fetch('/api/upload/presign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mimeType: file.type, folder }),
+    });
+    if (!presignRes.ok) throw new Error('Failed to get upload URL');
+    const { uploadUrl, publicUrl } = await presignRes.json();
+    const uploadRes = await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
+    if (!uploadRes.ok) throw new Error('Upload failed');
+    return publicUrl;
+  }
+
+  async function handleBannerUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+    setIsUploadingBanner(true);
+    try {
+      const url = await uploadImage(file, 'banners');
+      await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cookProfile: { bannerUrl: url } }),
+      });
+      setCookProfile(prev => prev ? { ...prev, bannerUrl: url } : prev);
+      toast({ title: 'Banner updated ✓' });
+    } catch {
+      toast({ title: 'Banner upload failed', variant: 'destructive' });
+    } finally {
+      setIsUploadingBanner(false);
+      e.target.value = '';
+    }
+  }
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+    setIsUploadingAvatar(true);
+    try {
+      const url = await uploadImage(file, 'avatars');
+      await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: url }),
+      });
+      toast({ title: 'Profile photo updated ✓' });
+    } catch {
+      toast({ title: 'Avatar upload failed', variant: 'destructive' });
+    } finally {
+      setIsUploadingAvatar(false);
+      e.target.value = '';
+    }
+  }
 
   useEffect(() => {
     if (authLoading) return;
@@ -160,75 +220,126 @@ export default function CookKitchenPage() {
   }
 
   return (
-    <div className="container py-8 space-y-8 max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row items-start gap-6">
-        <Avatar className="w-24 h-24 border-4 border-primary/30 shadow-md">
-          <AvatarImage src={user?.image ?? undefined} alt={user?.name ?? 'Cook'} />
-          <AvatarFallback className="text-3xl">
-            <ChefHat className="h-10 w-10" />
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-            <h1 className="text-3xl font-bold font-headline">
-              {cookProfile?.kitchenName ?? `${user?.name}'s Kitchen`}
-            </h1>
-            {cookProfile?.isVerified && (
-              <Badge variant="secondary">✓ Verified</Badge>
-            )}
-            {cookProfile?.avgRating && (
-              <Badge variant="outline">
-                <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
-                {cookProfile.avgRating.toFixed(1)}
-              </Badge>
-            )}
-          </div>
-          <p className="text-muted-foreground text-sm mt-1">
-            {cookProfile?.totalOrders ?? 0} total orders
-            {cookProfile?.pickupNeighborhood ? ` · ${cookProfile.pickupNeighborhood}` : ''}
-          </p>
-          {cookProfile?.description && (
-            <p className="mt-2 max-w-prose text-sm">{cookProfile.description}</p>
-          )}
-          {cookProfile?.cuisineTags && cookProfile.cuisineTags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {cookProfile.cuisineTags.map(tag => (
-                <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
-              ))}
+    <div className="space-y-8 max-w-5xl mx-auto pb-12">
+      {/* ── Banner + Profile Photo ── */}
+      <div className="relative">
+        {/* Banner */}
+        <div className="relative h-52 w-full overflow-hidden rounded-b-2xl bg-gradient-to-br from-primary/40 via-primary/20 to-secondary/40">
+          {cookProfile?.bannerUrl ? (
+            <Image
+              src={cookProfile.bannerUrl}
+              alt="Kitchen banner"
+              fill
+              className="object-cover"
+              sizes="100vw"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center opacity-10">
+              <ChefHat className="h-32 w-32 text-primary" />
             </div>
           )}
+            {/* Banner upload overlay */}
+          <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-colors group flex items-center justify-center">
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                size="sm"
+                variant="secondary"
+                className="shadow-lg"
+                disabled={isUploadingBanner}
+                onClick={() => bannerInputRef.current?.click()}
+              >
+                {isUploadingBanner ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Camera className="h-3.5 w-3.5 mr-1.5" />}
+                {isUploadingBanner ? 'Uploading...' : 'Change Banner'}
+              </Button>
+            </div>
+          </div>
+          <input ref={bannerInputRef} type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} />
         </div>
-        <div className="flex flex-wrap gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={() => {
+
+        {/* Profile photo — overlapping the banner */}
+        <div className="absolute -bottom-12 left-6 group">
+          <div className="relative w-24 h-24">
+            <Avatar className="w-24 h-24 border-4 border-background shadow-xl">
+              <AvatarImage src={user?.image ?? undefined} alt={user?.name ?? 'Cook'} />
+              <AvatarFallback className="text-3xl bg-primary/10 text-primary">
+                <ChefHat className="h-10 w-10" />
+              </AvatarFallback>
+            </Avatar>
+            <button
+              onClick={() => avatarInputRef.current?.click()}
+              className="absolute inset-0 rounded-full bg-black/0 hover:bg-black/50 transition-colors flex items-center justify-center"
+              disabled={isUploadingAvatar}
+            >
+              {isUploadingAvatar
+                ? <Loader2 className="h-5 w-5 text-white animate-spin" />
+                : <Camera className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />}
+            </button>
+            <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+          </div>
+        </div>
+
+        {/* Action buttons top-right */}
+        <div className="absolute top-3 right-3 flex gap-2">
+          <Button variant="secondary" size="sm" className="shadow" onClick={() => {
             const url = `${window.location.origin}/profile/${user?.id}`;
             navigator.clipboard.writeText(url);
             toast({ title: 'Profile link copied!' });
           }}>
-            <Link2 className="mr-2 h-4 w-4" /> Copy Link
+            <Link2 className="mr-1.5 h-3.5 w-3.5" /> Copy Link
           </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/pickup-slots">
-              <CalendarClock className="mr-2 h-4 w-4" /> Pickup Slots
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
+          <Button variant="secondary" size="sm" className="shadow" asChild>
             <Link href={`/profile/${user?.id}`}>
-              <Eye className="mr-2 h-4 w-4" /> Public View
+              <Eye className="mr-1.5 h-3.5 w-3.5" /> Public View
             </Link>
           </Button>
-          <Button size="sm" variant="outline" asChild>
-            <Link href="/dashboard/pickup-slots">
-              <Clock className="mr-2 h-4 w-4" /> Pickup Slots
-            </Link>
-          </Button>
-          <Button size="sm" asChild>
+          <Button size="sm" className="shadow" asChild>
             <Link href="/profile/edit">
-              <Edit className="mr-2 h-4 w-4" /> Edit Profile
+              <Edit className="mr-1.5 h-3.5 w-3.5" /> Edit Profile
             </Link>
           </Button>
         </div>
       </div>
+
+      {/* Kitchen info — offset for the avatar overlap */}
+      <div className="container max-w-5xl pt-10 space-y-1">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <h1 className="text-3xl font-bold font-headline">
+            {cookProfile?.kitchenName ?? `${user?.name}'s Kitchen`}
+          </h1>
+          {cookProfile?.isVerified && (
+            <Badge variant="secondary">✓ Verified</Badge>
+          )}
+          {cookProfile?.avgRating && (
+            <Badge variant="outline">
+              <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
+              {cookProfile.avgRating.toFixed(1)}
+            </Badge>
+          )}
+        </div>
+        <p className="text-muted-foreground text-sm">
+          {cookProfile?.totalOrders ?? 0} total orders
+          {cookProfile?.pickupNeighborhood ? ` · ${cookProfile.pickupNeighborhood}` : ''}
+        </p>
+        {cookProfile?.description && (
+          <p className="max-w-prose text-sm pt-1">{cookProfile.description}</p>
+        )}
+        {cookProfile?.cuisineTags && cookProfile.cuisineTags.length > 0 && (
+          <div className="flex flex-wrap gap-1 pt-2">
+            {cookProfile.cuisineTags.map(tag => (
+              <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+            ))}
+          </div>
+        )}
+        <div className="flex flex-wrap gap-2 pt-3">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard/pickup-slots">
+              <CalendarClock className="mr-1.5 h-3.5 w-3.5" /> Pickup Slots
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      <div className="container max-w-5xl space-y-8">
 
       {/* Draft / pending approval banner */}
       {cookProfile?.isDraft && (
@@ -434,6 +545,7 @@ export default function CookKitchenPage() {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

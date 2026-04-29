@@ -41,9 +41,20 @@ export function Header() {
             <Link href="/discover" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Discover
             </Link>
-            <Link href="/sell" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              Sell Food
-            </Link>
+            {isCook ? (
+              <>
+                <Link href="/profile/cook" className="transition-colors hover:text-foreground/80 text-foreground/60">
+                  My Kitchen
+                </Link>
+                <Link href="/orders?role=cook" className="transition-colors hover:text-foreground/80 text-foreground/60">
+                  My Sales
+                </Link>
+              </>
+            ) : (
+              <Link href="/sell" className="transition-colors hover:text-foreground/80 text-foreground/60">
+                Sell Food
+              </Link>
+            )}
             <Link href="/about" className="transition-colors hover:text-foreground/80 text-foreground/60">
               About
             </Link>

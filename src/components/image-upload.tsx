@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { Upload, X, ImageIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-type UploadFolder = 'dishes' | 'avatars';
+type UploadFolder = 'dishes' | 'avatars' | 'banners';
 
 interface ImageUploadProps {
   /** Current image URL (for showing existing image) */

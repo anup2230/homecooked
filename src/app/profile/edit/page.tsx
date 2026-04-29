@@ -29,6 +29,7 @@ const addDishSchema = z.object({
   category: z.string().optional(),
   serviceType: z.enum(['PREPPED', 'CATERING']).default('PREPPED'),
   imageUrl: z.string().url().optional(),
+  advanceNoticeHrs: z.coerce.number().int().min(0).default(24),
 });
 
 type AddDishForm = z.infer<typeof addDishSchema>;
@@ -47,6 +48,7 @@ const profileSchema = z.object({
   dropoffNotes: z.string().optional(),
   confirmationMessage: z.string().max(500).optional(),
   cancellationPolicy: z.string().max(500).optional(),
+  bannerUrl: z.string().url().nullable().optional(),
 });
 
 type ProfileForm = z.infer<typeof profileSchema>;
@@ -174,7 +176,7 @@ export default function EditProfilePage() {
       const res = await fetch('/api/dishes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, imageUrl: newDishImageUrl ?? undefined, deliveryOptions: ['PICKUP'] }),
+        body: JSON.stringify({ ...data, imageUrl: newDishImageUrl ?? undefined, deliveryOptions: ['PICKUP'], advanceNoticeHrs: data.advanceNoticeHrs ?? 24 }),
       });
       if (!res.ok) throw new Error('Failed to add dish');
       const { dish } = await res.json();
@@ -473,6 +475,20 @@ export default function EditProfilePage() {
                         <Textarea placeholder="What makes this dish special?" {...dishForm.register('description')} />
                         {dishForm.formState.errors.description && (
                           <p className="text-xs text-destructive">{dishForm.formState.errors.description.message}</p>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <Label>Order Cutoff (hours in advance)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="1"
+                          placeholder="24"
+                          {...dishForm.register('advanceNoticeHrs')}
+                        />
+                        <p className="text-xs text-muted-foreground">How many hours before pickup must orders be placed? (0 = anytime)</p>
+                        {dishForm.formState.errors.advanceNoticeHrs && (
+                          <p className="text-xs text-destructive">{dishForm.formState.errors.advanceNoticeHrs.message}</p>
                         )}
                       </div>
                     </div>
