@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, MapPin, Clock } from 'lucide-react';
+import { Star, MapPin, Clock, Navigation } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistance } from '@/lib/distance';
@@ -60,12 +60,6 @@ export function DishCard({ dish, distanceMiles: distMi }: DishCardProps) {
       <Card className="h-full flex flex-col transition-all duration-200 ease-in-out group-hover:shadow-xl border-0 shadow-none hover:shadow-none">
         <CardHeader className="p-0">
           <div className="relative aspect-square w-full overflow-hidden rounded-lg">
-            {distMi !== undefined && (
-              <div className="absolute top-2 left-2 z-10 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                <MapPin className="h-2.5 w-2.5" />
-                {formatDistance(distMi)}
-              </div>
-            )}
             <Image
               src={imageUrl}
               alt={displayName}
@@ -106,6 +100,12 @@ export function DishCard({ dish, distanceMiles: distMi }: DishCardProps) {
               <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
                 {advanceNoticeHrs < 24 ? `${advanceNoticeHrs}h notice` : `${Math.round(advanceNoticeHrs / 24)}d notice`}
+              </span>
+            )}
+            {distMi !== undefined && (
+              <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground ml-auto">
+                <Navigation className="h-3 w-3" />
+                {formatDistance(distMi)}
               </span>
             )}
           </div>
