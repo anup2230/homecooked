@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { db } from '@/lib/db';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2026-03-25.dahlia',
 });
 
 // Stripe requires raw body for webhook signature verification

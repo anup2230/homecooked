@@ -9,8 +9,9 @@ const respondSchema = z.object({
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { messageId: string } }
+  { params }: { params: Promise<{ messageId: string }> }
 ) {
+  const { messageId } = await params;
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -24,7 +25,6 @@ export async function POST(
     }
 
     const { action } = parsed.data;
-    const { messageId } = params;
 
     // Fetch the message with its order
     const message = await db.message.findUnique({

@@ -89,7 +89,8 @@ export function CreateListingForm() {
 
   const addTag = (tag: string) => {
     const trimmedTag = tag.trim();
-    if (trimmedTag && !fields.some(field => field.value === trimmedTag)) {
+    const currentTags = form.getValues('tags');
+    if (trimmedTag && !currentTags.includes(trimmedTag)) {
       append(trimmedTag);
       setSuggestedTags(prev => prev.filter(t => t.toLowerCase() !== trimmedTag.toLowerCase()));
     }
@@ -237,7 +238,7 @@ export function CreateListingForm() {
               <div className="flex flex-wrap gap-2">
                 {fields.map((field, index) => (
                   <Badge key={field.id} variant="secondary" className="pl-3 pr-1 py-1 text-sm">
-                    {field.value}
+                    {form.watch('tags')[index]}
                     <button type="button" onClick={() => remove(index)} className="ml-1 rounded-full p-0.5 hover:bg-destructive/20">
                       <X className="h-3 w-3" />
                     </button>

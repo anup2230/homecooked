@@ -206,9 +206,9 @@ export default function MapPage() {
                       )}
                     </div>
 
-                    {cook.cookProfile?.cuisineTags?.length > 0 && (
+                    {(cook.cookProfile?.cuisineTags?.length ?? 0) > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-2">
-                        {cook.cookProfile.cuisineTags.map(tag => (
+                        {cook.cookProfile?.cuisineTags?.map(tag => (
                           <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
                         ))}
                       </div>

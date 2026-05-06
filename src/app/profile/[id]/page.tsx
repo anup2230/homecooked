@@ -145,9 +145,9 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
                 </div>
               )}
 
-              {isCook && profile.cookProfile?.cuisineTags?.length > 0 && (
+              {isCook && (profile.cookProfile?.cuisineTags?.length ?? 0) > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  {profile.cookProfile.cuisineTags.map(tag => (
+                  {profile.cookProfile?.cuisineTags?.map(tag => (
                     <Badge key={tag} variant="outline">{tag}</Badge>
                   ))}
                 </div>

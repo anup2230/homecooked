@@ -86,8 +86,8 @@ export function LocationAutocomplete({ value, onChange, onSelect }: LocationAuto
                       : 'bg-background';
                     return (
                       <div
-                        key={index}
                         {...getSuggestionItemProps(suggestion, {
+                          key: index,
                           className: cn('p-2 cursor-pointer hover:bg-secondary', className),
                         })}
                       >

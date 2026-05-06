@@ -25,6 +25,7 @@ interface Message {
   proposedTime: string | null;
   proposedAddress: string | null;
   proposalStatus: 'PENDING' | 'CONFIRMED' | 'DECLINED' | null;
+  readAt: string | null;
 }
 
 interface Conversation {
