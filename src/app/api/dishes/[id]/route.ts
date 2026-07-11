@@ -3,6 +3,14 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { z } from 'zod';
 
+const pickupSlotInputSchema = z.object({
+  label: z.string().optional(),
+  dayOfWeek: z.number().int().min(0).max(6),
+  startTime: z.string().regex(/^\d{2}:\d{2}$/),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/),
+  maxOrders: z.number().int().positive().optional().nullable(),
+});
+
 const updateDishSchema = z.object({
   title: z.string().min(3).optional(),
   description: z.string().optional(),
@@ -17,6 +25,8 @@ const updateDishSchema = z.object({
   isAvailable: z.boolean().optional(),
   advanceNoticeHrs: z.number().int().min(0).optional(),
   maxOrdersPerDay: z.number().int().positive().optional(),
+  totalServings: z.number().int().positive().optional().nullable(),
+  pickupSlots: z.array(pickupSlotInputSchema).optional(), // when provided, replaces all dish slots
 });
 
 // GET /api/dishes/[id]
@@ -58,6 +68,10 @@ export async function GET(
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
+        pickupSlots: {
+          where: { isActive: true },
+          orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
+        },
         _count: { select: { reviews: true, orders: true } },
       },
     });
@@ -97,12 +111,34 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 });
     }
 
+    const { pickupSlots, ...dishData } = parsed.data;
+
     const updated = await db.dish.update({
       where: { id },
-      data: parsed.data,
+      data: dishData,
     });
 
-    return NextResponse.json({ dish: updated });
+    // Replace dish-specific slots if provided
+    if (pickupSlots !== undefined) {
+      await db.pickupSlot.deleteMany({ where: { dishId: id } });
+      if (pickupSlots.length > 0) {
+        await db.pickupSlot.createMany({
+          data: pickupSlots.map(slot => ({
+            ...slot,
+            cookId: dish.cookId,
+            dishId: id,
+            isActive: true,
+          })),
+        });
+      }
+    }
+
+    const updatedWithSlots = await db.dish.findUnique({
+      where: { id },
+      include: { pickupSlots: { where: { isActive: true }, orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] } },
+    });
+
+    return NextResponse.json({ dish: updatedWithSlots });
   } catch (err) {
     console.error('[dish PUT]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

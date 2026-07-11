@@ -37,30 +37,54 @@ export function Header() {
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Icons.logo className="h-6 w-auto" />
           </Link>
-          <nav className="flex items-center gap-6 text-sm">
-            <Link href="/discover" className="transition-colors hover:text-foreground/80 text-foreground/60">
+          <nav className="flex items-center gap-8 text-base">
+            <Link
+              href="/discover"
+              className="relative font-semibold text-foreground/70 transition-all duration-200 hover:text-foreground group"
+            >
               Discover Food
+              <span className="absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-primary transition-all duration-300 group-hover:w-full" />
             </Link>
             {isAdmin ? (
-              <Link href="/admin" className="transition-colors hover:text-foreground/80 text-foreground/60 font-medium text-primary/80">
+              <Link
+                href="/admin"
+                className="relative font-semibold text-primary/80 transition-all duration-200 hover:text-primary group"
+              >
                 Admin
+                <span className="absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-primary transition-all duration-300 group-hover:w-full" />
               </Link>
             ) : isCook ? (
               <>
-                <Link href="/profile/cook" className="transition-colors hover:text-foreground/80 text-foreground/60">
+                <Link
+                  href="/profile/cook"
+                  className="relative font-semibold text-foreground/70 transition-all duration-200 hover:text-foreground group"
+                >
                   My Kitchen
+                  <span className="absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-primary transition-all duration-300 group-hover:w-full" />
                 </Link>
-                <Link href="/orders?role=cook" className="transition-colors hover:text-foreground/80 text-foreground/60">
+                <Link
+                  href="/orders?role=cook"
+                  className="relative font-semibold text-foreground/70 transition-all duration-200 hover:text-foreground group"
+                >
                   My Sales
+                  <span className="absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-primary transition-all duration-300 group-hover:w-full" />
                 </Link>
               </>
             ) : (
-              <Link href="/sell" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              <Link
+                href="/sell"
+                className="relative font-semibold text-foreground/70 transition-all duration-200 hover:text-foreground group"
+              >
                 Sell Food
+                <span className="absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-primary transition-all duration-300 group-hover:w-full" />
               </Link>
             )}
-            <Link href="/about" className="transition-colors hover:text-foreground/80 text-foreground/60">
+            <Link
+              href="/about"
+              className="relative font-semibold text-foreground/70 transition-all duration-200 hover:text-foreground group"
+            >
               About
+              <span className="absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-primary transition-all duration-300 group-hover:w-full" />
             </Link>
           </nav>
         </div>

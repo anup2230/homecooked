@@ -3,6 +3,14 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { z } from 'zod';
 
+const pickupSlotInputSchema = z.object({
+  label: z.string().optional(),
+  dayOfWeek: z.number().int().min(0).max(6),
+  startTime: z.string().regex(/^\d{2}:\d{2}$/),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/),
+  maxOrders: z.number().int().positive().optional().nullable(),
+});
+
 const createDishSchema = z.object({
   title: z.string().min(3),
   description: z.string().optional(),
@@ -17,6 +25,8 @@ const createDishSchema = z.object({
   deliveryOptions: z.array(z.enum(['PICKUP', 'DROP_OFF'])).default(['PICKUP']),
   advanceNoticeHrs: z.number().int().min(0).default(24),
   maxOrdersPerDay: z.number().int().positive().optional(),
+  totalServings: z.number().int().positive().optional().nullable(),
+  pickupSlots: z.array(pickupSlotInputSchema).optional(),
 });
 
 // GET /api/dishes — browse all available dishes with optional filters
@@ -57,6 +67,11 @@ export async function GET(req: NextRequest) {
         ...(maxPrice !== undefined ? { price: { lte: maxPrice } } : {}),
       },
       include: {
+        pickupSlots: {
+          where: { isActive: true },
+          orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
+          select: { id: true, dayOfWeek: true, startTime: true, endTime: true, label: true, maxOrders: true },
+        },
         cook: {
           select: {
             id: true,
@@ -122,14 +137,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const { pickupSlots, ...dishData } = parsed.data;
+
     const dish = await db.dish.create({
       data: {
-        ...parsed.data,
+        ...dishData,
         cookId: session.user.id,
       },
     });
 
-    return NextResponse.json({ dish }, { status: 201 });
+    // Create dish-specific pickup slots if provided
+    if (pickupSlots && pickupSlots.length > 0) {
+      await db.pickupSlot.createMany({
+        data: pickupSlots.map(slot => ({
+          ...slot,
+          cookId: session.user.id,
+          dishId: dish.id,
+          isActive: true,
+        })),
+      });
+    }
+
+    const dishWithSlots = await db.dish.findUnique({
+      where: { id: dish.id },
+      include: { pickupSlots: { where: { isActive: true }, orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] } },
+    });
+
+    return NextResponse.json({ dish: dishWithSlots }, { status: 201 });
   } catch (err) {
     console.error('[dishes POST]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

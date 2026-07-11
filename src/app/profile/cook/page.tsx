@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -16,7 +17,7 @@ import {
   DollarSign, Edit, PlusCircle, ShoppingCart, Star,
   Package, Clock, CheckCircle2, XCircle, Eye, MoreHorizontal,
   Flame, Link2, Loader2, ChefHat, CalendarClock, AlertCircle, Camera,
-  TrendingUp, ToggleLeft, ToggleRight
+  TrendingUp, ToggleLeft, ToggleRight, Wallet, ExternalLink
 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 
@@ -35,6 +36,8 @@ interface CookProfile {
   instagramHandle: string | null;
   pickupNeighborhood: string | null;
   bannerUrl: string | null;
+  stripeAccountId: string | null;
+  stripePayoutsEnabled: boolean;
 }
 
 interface Dish {
@@ -75,10 +78,11 @@ const statusIcon: Record<OrderStatus, React.ReactNode> = {
   CANCELLED: <XCircle className="h-4 w-4 text-red-500" />,
 };
 
-export default function CookKitchenPage() {
+function CookKitchenPageInner() {
   const { user, isCook, isLoggedIn, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
 
   const [cookProfile, setCookProfile] = useState<CookProfile | null>(null);
   const [dishes, setDishes] = useState<Dish[]>([]);
@@ -87,6 +91,7 @@ export default function CookKitchenPage() {
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isConnectingPayout, setIsConnectingPayout] = useState(false);
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -149,6 +154,16 @@ export default function CookKitchenPage() {
     if (!isLoggedIn) { router.replace('/login'); return; }
     if (!isCook) { router.replace('/profile/me'); return; }
   }, [authLoading, isLoggedIn, isCook]);
+
+  // Show toast on Stripe Connect return
+  useEffect(() => {
+    const payout = searchParams.get('payout');
+    if (payout === 'connected') {
+      toast({ title: '🎉 Stripe payouts connected! You\'re ready to get paid.' });
+    } else if (payout === 'error') {
+      toast({ title: 'Payout setup incomplete — try again when ready.', variant: 'destructive' });
+    }
+  }, []);
 
   // Load cook profile + dishes
   useEffect(() => {
@@ -217,6 +232,40 @@ export default function CookKitchenPage() {
       setDishes(prev => prev.map(d => d.id === dishId ? { ...d, isAvailable } : d));
     } catch {
       toast({ title: 'Failed to update dish', variant: 'destructive' });
+    }
+  }
+
+  async function handlePayoutSetup() {
+    setIsConnectingPayout(true);
+    try {
+      const res = await fetch('/api/stripe/connect/onboard', { method: 'POST' });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        toast({ title: 'Failed to start payout setup', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'Something went wrong', variant: 'destructive' });
+    } finally {
+      setIsConnectingPayout(false);
+    }
+  }
+
+  async function handlePayoutDashboard() {
+    setIsConnectingPayout(true);
+    try {
+      const res = await fetch('/api/stripe/connect/dashboard', { method: 'POST' });
+      const data = await res.json();
+      if (data.url) {
+        window.open(data.url, '_blank');
+      } else {
+        toast({ title: 'Failed to open Stripe dashboard', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'Something went wrong', variant: 'destructive' });
+    } finally {
+      setIsConnectingPayout(false);
     }
   }
 
@@ -360,8 +409,8 @@ export default function CookKitchenPage() {
               : <><ToggleLeft className="mr-1.5 h-4 w-4" /> Paused</>}
           </Button>
           <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/pickup-slots">
-              <CalendarClock className="mr-1.5 h-3.5 w-3.5" /> Pickup Slots
+            <Link href="/profile/edit/dishes">
+              <CalendarClock className="mr-1.5 h-3.5 w-3.5" /> Manage Dishes
             </Link>
           </Button>
         </div>
@@ -492,6 +541,55 @@ export default function CookKitchenPage() {
         );
       })()}
 
+      {/* Payout Setup */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Payouts</CardTitle>
+            <CardDescription>Connect Stripe to receive payments from your orders.</CardDescription>
+          </div>
+          <Wallet className="h-5 w-5 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          {cookProfile?.stripePayoutsEnabled ? (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center gap-2 text-green-600 font-medium">
+                <CheckCircle2 className="h-5 w-5" />
+                <span>Stripe Connected ✓</span>
+              </div>
+              <p className="text-sm text-muted-foreground flex-1">Your earnings are automatically transferred to your bank account after each order.</p>
+              <Button variant="outline" size="sm" onClick={handlePayoutDashboard} disabled={isConnectingPayout}>
+                {isConnectingPayout ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ExternalLink className="h-4 w-4 mr-2" />}
+                View Stripe Dashboard
+              </Button>
+            </div>
+          ) : cookProfile?.stripeAccountId ? (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center gap-2 text-amber-600 font-medium">
+                <AlertCircle className="h-5 w-5" />
+                <span>Setup Incomplete</span>
+              </div>
+              <p className="text-sm text-muted-foreground flex-1">Your Stripe account was created but onboarding isn't complete yet. Finish setup to start receiving payments.</p>
+              <Button size="sm" onClick={handlePayoutSetup} disabled={isConnectingPayout}>
+                {isConnectingPayout ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ExternalLink className="h-4 w-4 mr-2" />}
+                Complete Setup
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex-1">
+                <p className="text-sm font-medium">Connect your bank account to get paid</p>
+                <p className="text-sm text-muted-foreground mt-1">Homecooked uses Stripe to securely send your earnings directly to your bank. Setup takes about 5 minutes.</p>
+              </div>
+              <Button onClick={handlePayoutSetup} disabled={isConnectingPayout}>
+                {isConnectingPayout ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Wallet className="h-4 w-4 mr-2" />}
+                Set Up Payouts
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Incoming Orders */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -595,7 +693,7 @@ export default function CookKitchenPage() {
             <CardDescription>Toggle availability or add new dishes to your menu.</CardDescription>
           </div>
           <Button size="sm" asChild>
-            <Link href="/profile/edit#dishes">
+            <Link href="/profile/edit/dishes">
               <PlusCircle className="mr-2 h-4 w-4" /> Add Dish
             </Link>
           </Button>
@@ -606,7 +704,7 @@ export default function CookKitchenPage() {
               <ChefHat className="h-8 w-8 mx-auto mb-2 opacity-40" />
               <p>No dishes yet.</p>
               <Button asChild className="mt-3" size="sm">
-                <Link href="/profile/edit#dishes">Add your first dish</Link>
+                <Link href="/profile/edit/dishes">Add your first dish</Link>
               </Button>
             </div>
           ) : (
@@ -636,5 +734,13 @@ export default function CookKitchenPage() {
       </Card>
       </div>
     </div>
+  );
+}
+
+export default function CookKitchenPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
+      <CookKitchenPageInner />
+    </Suspense>
   );
 }

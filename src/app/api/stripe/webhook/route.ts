@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { db } from '@/lib/db';
+import { sendEmail } from '@/lib/email';
+import { orderPlacedSubject, orderPlacedHtml } from '@/lib/emails/orderPlaced';
+import { orderConfirmedSubject, orderConfirmedHtml } from '@/lib/emails/orderConfirmed';
+import { orderConfirmedCookSubject, orderConfirmedCookHtml } from '@/lib/emails/orderConfirmedCook';
+import { orderCancelledSubject, orderCancelledHtml } from '@/lib/emails/orderCancelled';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
@@ -46,13 +51,50 @@ export async function POST(req: NextRequest) {
             },
           });
 
-          // Increment cook's total orders
-          const order = await db.order.findUnique({ where: { id: orderId } });
+          // Fetch full order details for emails and cook stat increment
+          const order = await db.order.findUnique({
+            where: { id: orderId },
+            include: {
+              dish: { select: { title: true } },
+              buyer: { select: { name: true, email: true } },
+              cook: {
+                select: {
+                  name: true,
+                  email: true,
+                  cookProfile: {
+                    select: {
+                      kitchenName: true,
+                      confirmationMessage: true,
+                      pickupAddress: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
           if (order) {
+            // Increment cook's total orders
             await db.cookProfile.update({
               where: { userId: order.cookId },
               data: { totalOrders: { increment: 1 } },
             });
+
+            // Email buyer: order confirmed
+            if (order.buyer.email) {
+              await sendEmail({
+                to: order.buyer.email,
+                subject: orderConfirmedSubject(order.cook.name ?? 'Your cook'),
+                html: orderConfirmedHtml({
+                  buyerName: order.buyer.name ?? 'there',
+                  cookName: order.cook.name ?? 'Your cook',
+                  dishTitle: order.dish.title,
+                  pickupAddress: order.cook.cookProfile?.pickupAddress,
+                  pickupTime: order.pickupTime ? order.pickupTime.toLocaleString() : null,
+                  confirmationMessage: order.cook.cookProfile?.confirmationMessage,
+                }),
+              });
+            }
           }
         }
         break;
@@ -66,6 +108,28 @@ export async function POST(req: NextRequest) {
             where: { id: orderId },
             data: { status: 'CANCELLED' },
           });
+
+          // Email buyer about cancellation due to payment failure
+          const order = await db.order.findUnique({
+            where: { id: orderId },
+            include: {
+              dish: { select: { title: true } },
+              buyer: { select: { name: true, email: true } },
+              cook: { select: { name: true } },
+            },
+          });
+          if (order?.buyer.email) {
+            await sendEmail({
+              to: order.buyer.email,
+              subject: orderCancelledSubject(),
+              html: orderCancelledHtml({
+                buyerName: order.buyer.name ?? 'there',
+                dishTitle: order.dish.title,
+                cookName: order.cook.name ?? 'the cook',
+                totalPrice: order.totalPrice,
+              }),
+            });
+          }
         }
         break;
       }

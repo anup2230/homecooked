@@ -1,6 +1,22 @@
 import NextAuth from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import type { NextRequest } from 'next/server';
 
 const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST };
+// Await params explicitly to satisfy Next.js 15 async dynamic API requirements
+export async function GET(
+  req: NextRequest,
+  context: { params: Promise<{ nextauth: string[] }> }
+) {
+  const params = await context.params;
+  return handler(req, { params });
+}
+
+export async function POST(
+  req: NextRequest,
+  context: { params: Promise<{ nextauth: string[] }> }
+) {
+  const params = await context.params;
+  return handler(req, { params });
+}

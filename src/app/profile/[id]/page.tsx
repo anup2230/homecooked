@@ -204,7 +204,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
               <>
                 <p>You haven&apos;t listed any dishes yet.</p>
                 <Button asChild className="mt-4">
-                  <Link href="/profile/edit#dishes">Add your first dish</Link>
+                  <Link href="/profile/edit/dishes">Add your first dish</Link>
                 </Button>
               </>
             ) : (

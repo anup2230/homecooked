@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { useSearchParams } from 'next/navigation';
+import { Loader2 as Spinner } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,7 +50,7 @@ const statusLabel: Record<OrderStatus, string> = {
   CANCELLED: 'Cancelled',
 };
 
-export default function OrdersPage() {
+function OrdersPageInner() {
   const { isLoggedIn, isCook } = useAuth();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -262,5 +263,13 @@ export default function OrdersPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function OrdersPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-20"><Spinner className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
+      <OrdersPageInner />
+    </Suspense>
   );
 }

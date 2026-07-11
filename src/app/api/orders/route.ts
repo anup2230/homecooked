@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { z } from 'zod';
+import { sendEmail } from '@/lib/email';
+import { orderPlacedSubject, orderPlacedHtml } from '@/lib/emails/orderPlaced';
+import { orderConfirmedCookSubject, orderConfirmedCookHtml } from '@/lib/emails/orderConfirmedCook';
 
 const createOrderSchema = z.object({
   dishId: z.string(),
@@ -78,6 +81,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Cannot order your own dish' }, { status: 400 });
     }
 
+    // Check servings capacity if set
+    if (dish.totalServings != null) {
+      const agg = await db.order.aggregate({
+        where: {
+          dishId,
+          status: { in: ['PENDING', 'CONFIRMED', 'PREPARING', 'READY'] },
+        },
+        _sum: { quantity: true },
+      });
+      const usedServings = agg._sum.quantity ?? 0;
+      const remaining = dish.totalServings - usedServings;
+      if (remaining <= 0) {
+        return NextResponse.json({ error: 'Sorry, this dish is sold out.' }, { status: 409 });
+      }
+      if (quantity > remaining) {
+        return NextResponse.json(
+          { error: `Only ${remaining} serving(s) remaining for this dish.`, remainingServings: remaining },
+          { status: 409 }
+        );
+      }
+    }
+
     const totalPrice = dish.price * quantity;
 
     const order = await db.order.create({
@@ -96,6 +121,50 @@ export async function POST(req: NextRequest) {
         cook: { select: { id: true, name: true } },
       },
     });
+
+    // Fetch buyer and cook emails for transactional notifications
+    const [buyer, cook] = await Promise.all([
+      db.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true, email: true },
+      }),
+      db.user.findUnique({
+        where: { id: dish.cookId },
+        select: { name: true, email: true, cookProfile: { select: { kitchenName: true } } },
+      }),
+    ]);
+
+    // Email buyer: order placed
+    if (buyer?.email) {
+      await sendEmail({
+        to: buyer.email,
+        subject: orderPlacedSubject(cook?.cookProfile?.kitchenName ?? cook?.name ?? 'your cook'),
+        html: orderPlacedHtml({
+          buyerName: buyer.name ?? 'there',
+          cookName: cook?.name ?? 'Your cook',
+          kitchenName: cook?.cookProfile?.kitchenName ?? cook?.name ?? 'the kitchen',
+          dishTitle: dish.title,
+          quantity,
+          totalPrice,
+        }),
+      });
+    }
+
+    // Email cook: new order arrived
+    if (cook?.email) {
+      await sendEmail({
+        to: cook.email,
+        subject: orderConfirmedCookSubject(buyer?.name ?? 'Someone'),
+        html: orderConfirmedCookHtml({
+          cookName: cook.name ?? 'there',
+          buyerName: buyer?.name ?? 'A customer',
+          dishTitle: dish.title,
+          quantity,
+          notes: notes ?? null,
+          orderId: order.id,
+        }),
+      });
+    }
 
     return NextResponse.json({ order }, { status: 201 });
   } catch (err) {

@@ -30,7 +30,9 @@ const nextConfig: NextConfig = {
   output: 'standalone',
 
   poweredByHeader: false,
-  reactStrictMode: true,
+  // Strict mode causes double renders in dev (intentional for catching bugs,
+  // but adds latency). Disable in dev, enable in prod.
+  reactStrictMode: process.env.NODE_ENV === 'production',
   compress: true,
 
   async headers() {
@@ -53,10 +55,20 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
   },
 
+  // Suppress next-auth v4 sync dynamic API warnings (internal to the library,
+  // not fixable without upgrading to next-auth v5)
+  logging: {
+    fetches: {
+      fullUrl: false,
+    },
+  },
+
   experimental: {
     serverActions: {
       allowedOrigins: ['localhost:9002'],
     },
+    // Tree-shake heavy icon/component libraries — speeds up dev compilation
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
 };
 

@@ -108,6 +108,9 @@ model CookProfile {
   bannerUrl          String?  // kitchen hero banner image
   isDraft            Boolean  @default(true)  // hidden until admin approves
   onboardingStep     Int      @default(0)     // wizard progress (0=not started)
+  // Stripe Connect
+  stripeAccountId      String?
+  stripePayoutsEnabled Boolean @default(false)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -131,12 +134,14 @@ model Dish {
   isAvailable       Boolean        @default(true)
   advanceNoticeHrs  Int            @default(24)
   maxOrdersPerDay   Int?
+  totalServings     Int?           // null = unlimited; auto-closes when active orders fill this
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
-  cook    User      @relation("CookDishes", fields: [cookId], references: [id], onDelete: Cascade)
-  orders  Order[]
-  reviews Review[]
+  cook        User         @relation("CookDishes", fields: [cookId], references: [id], onDelete: Cascade)
+  orders      Order[]
+  reviews     Review[]
+  pickupSlots PickupSlot[] @relation("DishPickupSlots")
 }
 
 enum ServiceType {
@@ -197,6 +202,7 @@ model Order {
 model PickupSlot {
   id          String   @id @default(cuid())
   cookId      String
+  dishId      String?  // when set, slot belongs to a specific dish; otherwise cook-wide
   label       String?  // e.g. "Saturday afternoon"
   dayOfWeek   Int      // 0=Sun, 1=Mon, ... 6=Sat
   startTime   String   // "14:00" (24hr format)
@@ -207,6 +213,7 @@ model PickupSlot {
   updatedAt   DateTime @updatedAt
 
   cook   User    @relation("CookPickupSlots", fields: [cookId], references: [id], onDelete: Cascade)
+  dish   Dish?   @relation("DishPickupSlots", fields: [dishId], references: [id], onDelete: Cascade)
   orders Order[]
 }
 

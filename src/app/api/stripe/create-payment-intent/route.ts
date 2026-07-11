@@ -27,7 +27,10 @@ export async function POST(req: NextRequest) {
 
     const order = await db.order.findUnique({
       where: { id: parsed.data.orderId },
-      include: { dish: { select: { title: true } } },
+      include: {
+        dish: { select: { title: true } },
+        cook: { include: { cookProfile: { select: { stripeAccountId: true, stripePayoutsEnabled: true } } } },
+      },
     });
 
     if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
@@ -38,16 +41,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Order is not in a payable state' }, { status: 409 });
     }
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(order.totalPrice * 100), // cents
+    const amountCents = Math.round(order.totalPrice * 100);
+    const cookStripeAccountId = order.cook?.cookProfile?.stripeAccountId;
+    const cookPayoutsEnabled = order.cook?.cookProfile?.stripePayoutsEnabled;
+
+    // 10% platform fee
+    const applicationFeeCents = Math.round(amountCents * 0.10);
+
+    const paymentIntentParams: Stripe.PaymentIntentCreateParams = {
+      amount: amountCents,
       currency: 'usd',
       metadata: {
         orderId: order.id,
         buyerId: order.buyerId,
         cookId: order.cookId,
+        hasTransfer: cookStripeAccountId && cookPayoutsEnabled ? 'true' : 'false',
       },
       description: `Homecooked order: ${order.dish.title}`,
-    });
+    };
+
+    // Wire funds to cook's Stripe Express account if they've completed Connect onboarding
+    if (cookStripeAccountId && cookPayoutsEnabled) {
+      paymentIntentParams.transfer_data = { destination: cookStripeAccountId };
+      paymentIntentParams.application_fee_amount = applicationFeeCents;
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create(paymentIntentParams);
 
     return NextResponse.json({ clientSecret: paymentIntent.client_secret });
   } catch (err) {

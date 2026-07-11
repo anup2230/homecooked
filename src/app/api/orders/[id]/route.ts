@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { z } from 'zod';
+import { sendEmail } from '@/lib/email';
+import { orderConfirmedSubject, orderConfirmedHtml } from '@/lib/emails/orderConfirmed';
+import { orderCancelledSubject, orderCancelledHtml } from '@/lib/emails/orderCancelled';
+import { orderReadySubject, orderReadyHtml } from '@/lib/emails/orderReady';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2026-03-25.dahlia',
+});
 
 const updateOrderSchema = z.object({
   status: z.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED']),
@@ -175,6 +184,28 @@ export async function PUT(
       data: { status },
     });
 
+    // Fetch full details needed for emails / refunds
+    const fullOrder = await db.order.findUnique({
+      where: { id },
+      include: {
+        dish: { select: { title: true } },
+        buyer: { select: { name: true, email: true } },
+        cook: {
+          select: {
+            name: true,
+            phone: true,
+            cookProfile: {
+              select: {
+                kitchenName: true,
+                confirmationMessage: true,
+                pickupAddress: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
     // Auto-send cook's default confirmation message to buyer on confirm
     if (isCook && status === 'CONFIRMED') {
       const cookProfile = await db.cookProfile.findUnique({
@@ -189,6 +220,67 @@ export async function PUT(
             body: cookProfile.confirmationMessage,
             orderId: id,
           },
+        });
+      }
+
+      // Email buyer: order confirmed
+      if (fullOrder?.buyer.email) {
+        await sendEmail({
+          to: fullOrder.buyer.email,
+          subject: orderConfirmedSubject(fullOrder.cook.name ?? 'Your cook'),
+          html: orderConfirmedHtml({
+            buyerName: fullOrder.buyer.name ?? 'there',
+            cookName: fullOrder.cook.name ?? 'Your cook',
+            dishTitle: fullOrder.dish.title,
+            pickupAddress: fullOrder.cook.cookProfile?.pickupAddress,
+            pickupTime: fullOrder.pickupTime ? fullOrder.pickupTime.toLocaleString() : null,
+            confirmationMessage: fullOrder.cook.cookProfile?.confirmationMessage,
+          }),
+        });
+      }
+    }
+
+    // Email buyer: order ready for pickup
+    if (isCook && status === 'READY' && fullOrder?.buyer.email) {
+      await sendEmail({
+        to: fullOrder.buyer.email,
+        subject: orderReadySubject(),
+        html: orderReadyHtml({
+          buyerName: fullOrder.buyer.name ?? 'there',
+          dishTitle: fullOrder.dish.title,
+          cookName: fullOrder.cook.name ?? 'Your cook',
+          pickupAddress: fullOrder.cook.cookProfile?.pickupAddress,
+          cookPhone: fullOrder.cook.phone,
+        }),
+      });
+    }
+
+    // Handle cancellation: refund + email
+    if (status === 'CANCELLED') {
+      // Issue Stripe refund if payment was captured
+      if (order.stripePaymentIntentId) {
+        try {
+          await stripe.refunds.create({
+            payment_intent: order.stripePaymentIntentId,
+          });
+          console.log(`[orders] Refund issued for order ${id}, PI ${order.stripePaymentIntentId}`);
+        } catch (refundErr) {
+          console.error('[orders] Stripe refund failed:', refundErr);
+          // Don't block the cancellation — log and continue
+        }
+      }
+
+      // Email buyer about cancellation
+      if (fullOrder?.buyer.email) {
+        await sendEmail({
+          to: fullOrder.buyer.email,
+          subject: orderCancelledSubject(),
+          html: orderCancelledHtml({
+            buyerName: fullOrder.buyer.name ?? 'there',
+            dishTitle: fullOrder.dish.title,
+            cookName: fullOrder.cook.name ?? 'the cook',
+            totalPrice: fullOrder.totalPrice,
+          }),
         });
       }
     }
